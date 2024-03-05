@@ -1,0 +1,167 @@
+/* FILEPATH: /home/ewanja/space-traders/service/views/css/index.css */
+:root {
+  --primary-color: #1a1a1a;
+  --secondary-color: #333;
+  --tertiary-color: #444;
+  --accent-color: #e74c3c;
+
+  --primary-text-color: #ffffff;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+
+body {
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.2rem;
+  width: 100%;
+}
+
+b {
+  color: var(--accent-color);
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-color);
+  position: relative;
+}
+
+h1 {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-color);
+}
+
+span {
+  vertical-align: middle;
+}
+
+button {
+  background-color: var(--tertiary-color);
+  color: var(--primary-text-color);
+  padding: 10px 30px;
+  border: 2px solid var(--secondary-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: ease-in-out 0.2s;
+  font-size: 1.2rem;
+}
+
+button:hover {
+  background-color: var(--accent-color);
+  border: 2px solid var(--accent-color);
+  color: var(--primary-text-color);
+}
+
+input[type="password"] {
+  padding: 10px;
+  border-radius: 8px;
+  border: 2px solid var(--tertiary-color);
+  background-color: var(--secondary-color);
+  color: var(--primary-text-color);
+  font-size: 1.2rem;
+}
+
+/* Header styles */
+
+header {
+  background-color: var(--secondary-color);
+  padding: 10px 20px;
+  width: 100%;
+}
+
+header h1 {
+  text-decoration: underline;
+  text-decoration-color: var(--tertiary-color);
+}
+
+nav {
+  margin-top: 10px;
+  background-color: var(--tertiary-color);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+nav a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: var(--primary-text-color);
+}
+
+nav a:hover {
+  color: var(--accent-color);
+}
+
+/* Header End */
+
+/* main styles */
+main {
+  margin: 20px;
+  padding: 20px;
+  background-color: var(--secondary-color);
+  border-radius: 8px;
+}
+
+/* Footer styles */
+footer {
+  background-color: var(--secondary-color);
+  padding: 10px 20px;
+  text-align: center;
+}
+
+/* table styles */
+
+.table-container {
+  overflow: auto;
+  max-width: 100%;
+  height: 500px; /* Set a fixed height for the container */
+  position: relative;
+  font-size: small;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border: 1px solid var(--tertiary-color);
+  padding: 10px;
+  text-align: center;
+}
+
+th {
+  background-color: var(--tertiary-color);
+  color: var(--primary-text-color);
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+tr:nth-child(even) {
+  background-color: var(--tertiary-color);
+}
+
+tr:nth-child(odd) {
+  background-color: var(--secondary-color);
+}
+
+/* Make the scrollbar sticky */
+.table-container::-webkit-scrollbar {
+  width: 12px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background-color: var(--tertiary-color);
+  border-radius: 6px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background-color: var(--secondary-color);
+}

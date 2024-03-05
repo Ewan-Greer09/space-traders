@@ -1,0 +1,45 @@
+{
+  "server-status": {
+    "method": "GET",
+    "path": "/",
+    "description": "Get the status of the server",
+    "headers": {
+      "Accept": "application/json"
+    }
+  },
+  "agent-details": {
+    "method": "GET",
+    "path": "/my/agent",
+    "description": "Get the details of the agent",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <token>"
+    }
+  },
+  "list-agents": {
+    "method": "GET",
+    "path": "/agents",
+    "description": "Gets a list of agents",
+    "headers": {
+      "Accept": "application/json"
+    }
+  },
+  "contracts": {
+    "method": "GET",
+    "path": "/my/contracts",
+    "description": "Gets a list of contracts",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <token>"
+    }
+  },
+  "contract-accept": {
+    "method": "POST",
+    "path": "/my/contracts/%s/accept",
+    "description": "Accepts a given contract",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer <token>"
+    }
+  }
+}
