@@ -8,6 +8,12 @@ import (
 	"space-traders/service/views/components/ship"
 )
 
+func (vh *ViewHandler) MountFleetRoutes(e *echo.Echo) {
+	e.GET("/fleet", vh.GetFleet)
+	e.GET("/fleet/list", vh.GetFleetList)
+	e.GET("/fleet/ship/:symbol", vh.GetFleetShip)
+}
+
 func (vh *ViewHandler) GetFleet(c echo.Context) error {
 	return fleet.Page().Render(c.Request().Context(), c.Response())
 }

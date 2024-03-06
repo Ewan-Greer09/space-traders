@@ -5,3 +5,7 @@ Make:
 
 docker:	
 	@docker compose up --build
+
+app:
+	@templ generate
+	@go run cmd/main/main.go

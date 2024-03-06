@@ -61,7 +61,7 @@ func Content() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"login\" id=\"login-form\"><h1>Login</h1><form hx-post=\"/com/login/login\" hx-target=\"#login-form\" hx-swap=\"outerHTML\"><input type=\"password\" name=\"api-key\" placeholder=\"api-key\" required> <button type=\"submit\">Login</button></form></div></main>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"login\" id=\"login-form\"><h1>Login</h1><form hx-post=\"/com/login/login\" hx-target=\"#login-form\" hx-swap=\"outerHTML\"><label for=\"username\">Username</label> <input type=\"text\" id=\"username\" name=\"username\" required> <label for=\"password\">Password</label> <input type=\"password\" id=\"password\" name=\"password\" required> <button type=\"submit\">Login</button></form></div></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -109,7 +109,7 @@ func LoginFailure() templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"container\"><div class=\"login\"><h1>Login</h1><p>Login failed</p></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"container\"><div class=\"login\" hx-get=\"/login\" hx-target=\"body\" hx-trigger=\"load delay:3s\"><h1>Login</h1><p>Login failed</p></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -7,10 +7,12 @@ package postgres
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getAll = `-- name: GetAll :many
-SELECT id, username, email, password, created_at FROM users
+SELECT id, username, password, api_key FROM users
 `
 
 func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
@@ -25,9 +27,8 @@ func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
-			&i.Email,
 			&i.Password,
-			&i.CreatedAt,
+			&i.ApiKey,
 		); err != nil {
 			return nil, err
 		}
@@ -37,4 +38,20 @@ func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getOneByUsername = `-- name: GetOneByUsername :one
+SELECT id, username, password, api_key FROM users WHERE username = $1
+`
+
+func (q *Queries) GetOneByUsername(ctx context.Context, username pgtype.Text) (User, error) {
+	row := q.db.QueryRow(ctx, getOneByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.ApiKey,
+	)
+	return i, err
 }

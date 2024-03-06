@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 
+	"space-traders/repository/postgres"
 	"space-traders/service/views/components/shared"
 )
 
@@ -20,7 +21,12 @@ type ErrorResponse struct {
 
 type ViewHandler struct {
 	Client *openAPI.APIClient
-	userDB *pgx.Conn
+	userDB *postgres.Queries
+}
+
+func (vh *ViewHandler) MountSharedRoutes(e *echo.Echo) {
+	e.GET("/com/header", vh.GetHeader)
+	e.GET("/com/footer", vh.GetFooter)
 }
 
 func NewViewHandler() *ViewHandler {
@@ -36,7 +42,7 @@ func NewViewHandler() *ViewHandler {
 
 	return &ViewHandler{
 		Client: openAPI.NewAPIClient(cfg),
-		userDB: conn,
+		userDB: postgres.New(conn),
 	}
 }
 

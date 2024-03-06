@@ -1,4 +1,4 @@
-package login
+package register
 
 import "space-traders/service/views/components/shared"
 
@@ -8,7 +8,7 @@ templ Page() {
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<title>Login</title>
+			<title>Register</title>
 		</head>
 		<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 		<link
@@ -34,33 +34,33 @@ templ Page() {
 
 templ Content() {
 	<main>
-		<div class="login" id="login-form">
-			<h1>Login</h1>
-			<form hx-post="/com/login/login" hx-target="#login-form" hx-swap="outerHTML">
-				<label for="username">Username</label>
-				<input type="text" id="username" name="username" required/>
-				<label for="password">Password</label>
-				<input type="password" id="password" name="password" required/>
-				<button type="submit">Login</button>
-			</form>
-		</div>
+		<h1>Register</h1>
+		<form hx-post="/register" hx-target="#register-form">
+			<div id="register-form">
+				<div>
+					<label for="username">Username</label>
+					<input type="text" id="username" name="username" required/>
+				</div>
+				<div>
+					<label for="email">Email</label>
+					<input type="email" id="email" name="email" required/>
+				</div>
+				<div>
+					<label for="password">Password</label>
+					<input type="password" id="password" name="password" required/>
+				</div>
+				<div>
+					<label for="confirm-password">Confirm Password</label>
+					<input type="password" id="confirm-password" name="confirm-password" required/>
+				</div>
+				<div>
+					<label for="api-key">API Key</label>
+					<input type="password" id="api-key" name="api-key" required/>
+				</div>
+				<div>
+					<button type="submit">Register</button>
+				</div>
+			</div>
+		</form>
 	</main>
-}
-
-templ LoginSuccess() {
-	<div class="container">
-		<div class="login">
-			<h1>Login</h1>
-			<p>Login successful</p>
-		</div>
-	</div>
-}
-
-templ LoginFailure() {
-	<div class="container">
-		<div class="login" hx-get="/login" hx-target="body" hx-trigger="load delay:3s">
-			<h1>Login</h1>
-			<p>Login failed</p>
-		</div>
-	</div>
 }

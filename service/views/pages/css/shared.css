@@ -55,7 +55,9 @@ button:hover {
   color: var(--primary-text-color);
 }
 
-input[type="password"] {
+input[type="password"],
+input[type="text"],
+input[type="email"] {
   padding: 10px;
   border-radius: 8px;
   border: 2px solid var(--tertiary-color);
