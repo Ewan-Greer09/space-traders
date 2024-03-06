@@ -8,9 +8,12 @@ import (
 )
 
 func main() {
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
 
-	err := api.NewAPI().Start()
+	err = api.NewAPI().Start()
 	if err != nil {
 		panic(err)
 	}
