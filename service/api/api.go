@@ -48,7 +48,7 @@ func (a *API) Routes() {
 	a.e.Use(getSessionCookie())
 	a.e.Use(a.ViewHandler.AddKeyToReq())
 
-	a.e.Static("/static", "service/views/pages/css")
+	a.e.Static("/static", "service/views/css")
 
 	a.ViewHandler.MountIndexRoutes(a.e)
 	a.ViewHandler.MountFleetRoutes(a.e)
