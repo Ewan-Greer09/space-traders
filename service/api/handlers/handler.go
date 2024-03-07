@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"time"
 
 	openAPI "github.com/UnseenBook/spacetraders-go-sdk"
 	"github.com/jackc/pgx/v5"
@@ -36,7 +35,6 @@ func NewViewHandler(config *config.Config) *ViewHandler {
 	cfg.AddDefaultHeader("Content-Type", "application/json")
 	cfg.AddDefaultHeader("Accept", "application/json")
 
-	time.Sleep(5 * time.Second)
 	conn, err := pgx.Connect(context.Background(), config.DATABASE_URL)
 	if err != nil {
 		panic(err)

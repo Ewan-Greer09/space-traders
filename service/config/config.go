@@ -62,8 +62,6 @@ func MustLoadConfig() *Config {
 		log.Panicf("Error unmarshalling config, %s", err)
 	}
 
-	log.Printf("Config loaded: %+v", c)
-
 	return c
 }
 
