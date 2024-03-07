@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"context"
-	"os"
+	"time"
 
 	openAPI "github.com/UnseenBook/spacetraders-go-sdk"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 
 	"space-traders/repository/postgres"
+	"space-traders/service/config"
 	"space-traders/service/views/components/shared"
 )
 
@@ -22,6 +23,7 @@ type ErrorResponse struct {
 type ViewHandler struct {
 	Client *openAPI.APIClient
 	userDB *postgres.Queries
+	cfg    *config.Config
 }
 
 func (vh *ViewHandler) MountSharedRoutes(e *echo.Echo) {
@@ -29,13 +31,13 @@ func (vh *ViewHandler) MountSharedRoutes(e *echo.Echo) {
 	e.GET("/com/footer", vh.GetFooter)
 }
 
-func NewViewHandler() *ViewHandler {
+func NewViewHandler(config *config.Config) *ViewHandler {
 	cfg := openAPI.NewConfiguration()
 	cfg.AddDefaultHeader("Content-Type", "application/json")
 	cfg.AddDefaultHeader("Accept", "application/json")
-	// cfg.AddDefaultHeader("Authorization", "Bearer "+os.Getenv("API_ACCESS_TOKEN"))
 
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	time.Sleep(5 * time.Second)
+	conn, err := pgx.Connect(context.Background(), config.DATABASE_URL)
 	if err != nil {
 		panic(err)
 	}
@@ -43,6 +45,7 @@ func NewViewHandler() *ViewHandler {
 	return &ViewHandler{
 		Client: openAPI.NewAPIClient(cfg),
 		userDB: postgres.New(conn),
+		cfg:    config,
 	}
 }
 

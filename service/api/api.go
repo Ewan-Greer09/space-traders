@@ -22,7 +22,7 @@ func NewAPI() *API {
 
 	a := &API{
 		e:           e,
-		ViewHandler: handlers.NewViewHandler(),
+		ViewHandler: handlers.NewViewHandler(config.MustLoadConfig()),
 		Cfg:         config.MustLoadConfig(),
 	}
 	a.Routes()
@@ -31,7 +31,7 @@ func NewAPI() *API {
 }
 
 func (a *API) Start() error {
-	if err := a.e.Start(fmt.Sprintf("%s:%s", a.Cfg.Host, a.Cfg.Host)); err != nil {
+	if err := a.e.Start(fmt.Sprintf("%s:%s", a.Cfg.Host, a.Cfg.Port)); err != nil {
 		return err
 	}
 
