@@ -59,7 +59,7 @@ func Nav() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav><a href=\"/\"><span class=\"material-symbols-outlined\">space_dashboard</span> <span>Home</span></a> <a href=\"/fleet\"><span class=\"material-symbols-outlined\">rocket_launch</span> <span>Fleet</span></a> <a href=\"/loans\"><span class=\"material-symbols-outlined\">credit_score</span> <span>Loans</span></a> <a href=\"/login\"><span class=\"material-symbols-outlined\">login</span> <span>Login</span></a> <a href=\"/register\"><span class=\"material-symbols-outlined\">how_to_reg</span> <span>Register</span></a> <a href=\"/logout\"><span class=\"material-symbols-outlined\">logout</span> <span>Logout</span></a></nav>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav><a href=\"/\"><span class=\"material-symbols-outlined\">space_dashboard</span> <span>Home</span></a> <a href=\"/fleet\"><span class=\"material-symbols-outlined\">rocket_launch</span> <span>Fleet</span></a> <a href=\"/system\"><span class=\"material-symbols-outlined\">radar</span> <span>system</span></a> <a href=\"/loans\"><span class=\"material-symbols-outlined\">credit_score</span> <span>Loans</span></a> <a href=\"/login\"><span class=\"material-symbols-outlined\">login</span> <span>Login</span></a> <a href=\"/register\"><span class=\"material-symbols-outlined\">how_to_reg</span> <span>Register</span></a> <a href=\"/logout\"><span class=\"material-symbols-outlined\">logout</span> <span>Logout</span></a></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

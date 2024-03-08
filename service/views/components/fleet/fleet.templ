@@ -65,8 +65,11 @@ templ Fleet(fleet openAPI.GetMyShips200Response) {
 					<tr>
 						<td><a href={ templ.SafeURL(fmt.Sprintf("/fleet/ship/%s", ship.GetSymbol())) }>{ ship.GetSymbol() }</a></td>
 						<td>{ fmt.Sprint(ship.GetRegistration().Name) }</td>
-						<td>{ fmt.Sprint(ship.GetNav().SystemSymbol) }</td>
-						<td>{ fmt.Sprint(ship.GetCrew().Current) } / { fmt.Sprint(ship.GetCrew().Capacity) }</td>
+						<td>{ fmt.Sprint(ship.GetNav().WaypointSymbol) }</td>
+						<td>
+							<p>{ fmt.Sprint(ship.GetCrew().Current) } / { fmt.Sprint(ship.GetCrew().Capacity) }</p>
+							<meter min="0" low="0" high={ fmt.Sprint((ship.GetCrew().Capacity / 10) * 9) } max={ fmt.Sprint(ship.GetCrew().Capacity) } optimum={ fmt.Sprint(ship.GetCrew().Capacity / 2) } value={ fmt.Sprint(ship.GetCrew().Current) }>{ fmt.Sprint(ship.GetCrew().Current) }/{ fmt.Sprint(ship.GetCrew().Capacity) }</meter>
+						</td>
 						<td>{ fmt.Sprint(ship.GetFrame().Name) }</td>
 						<td>{ fmt.Sprint(ship.GetReactor().Name) }</td>
 						<td>{ fmt.Sprint(ship.GetEngine().Name) }</td>

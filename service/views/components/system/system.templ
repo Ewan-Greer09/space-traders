@@ -1,0 +1,49 @@
+package system
+
+// import "fmt"
+import "space-traders/service/views/components/shared"
+
+// import openAPI "github.com/UnseenBook/spacetraders-go-sdk"
+templ Page() {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>System</title>
+		</head>
+		<script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+		/>
+		<link rel="preconnect" href="https://fonts.googleapis.com"/>
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="/static/shared.css"/>
+		<body>
+			<header hx-get="/com/header" hx-swap="outerHTML" hx-trigger="load">
+				<!-- populated with an hx-get request to the server -->
+			</header>
+			@Content()
+			@shared.Footer()
+		</body>
+	</html>
+}
+
+templ Content() {
+	<main>
+		<h1>System</h1>
+		<div id="system-info" hx-get="/com/system-info" hx-swap="outerHTML" hx-trigger="load">
+			<!-- populated with an hx-get request to the server -->
+			loading...
+		</div>
+		<div id="system-locations" hx-get="/com/system-locations" hx-swap="outerHTML" hx-trigger="load">
+			<!-- populated with an hx-get request to the server -->
+			loading...
+		</div>
+	</main>
+}

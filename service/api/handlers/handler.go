@@ -108,3 +108,7 @@ func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {
 		}
 	}
 }
+
+func (vh *ViewHandler) Favicon(c echo.Context) error {
+	return c.File("service/views/favicon.ico")
+}
