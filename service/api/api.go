@@ -45,7 +45,6 @@ func (a *API) Routes() {
 	a.e.Use(middleware.CORS())
 	a.e.Use(middleware.Gzip())
 	a.e.Use(middleware.Secure())
-	a.e.Use(getSessionCookie())
 	a.e.Use(a.ViewHandler.AddKeyToReq())
 
 	a.e.Static("/static", "service/views/css")
@@ -54,19 +53,4 @@ func (a *API) Routes() {
 	a.ViewHandler.MountFleetRoutes(a.e)
 	a.ViewHandler.MountLoginRoutes(a.e)
 	a.ViewHandler.MountSharedRoutes(a.e)
-}
-
-func getSessionCookie() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			cookie, err := c.Cookie("session")
-			if err != nil {
-				return next(c)
-			}
-
-			c.Set("session", cookie.Value)
-
-			return next(c)
-		}
-	}
 }

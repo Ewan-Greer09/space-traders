@@ -64,3 +64,19 @@ templ Content() {
 		</form>
 	</main>
 }
+
+templ RegisterFailure() {
+	<div class="container">
+		<div class="register" hx-get="/register" hx-target="body" hx-trigger="load delay:3s">
+			<p>Register failed</p>
+		</div>
+	</div>
+}
+
+templ RegisterSuccess() {
+	<div class="container">
+		<div class="register">
+			<p>Register successful</p>
+		</div>
+	</div>
+}

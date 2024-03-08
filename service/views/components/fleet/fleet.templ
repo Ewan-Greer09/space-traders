@@ -37,7 +37,7 @@ templ Page() {
 templ Content() {
 	<main>
 		<h1>Fleet Data</h1>
-		<div id="fleet-container" hx-get="/com/fleet/list" hx-swap="outerHTML" hx-target="#fleet-container" hx-trigger="load">
+		<div id="fleet-container" hx-get="/fleet/list" hx-swap="outerHTML" hx-target="#fleet-container" hx-trigger="load">
 			<b>Loading...</b>
 		</div>
 	</main>
@@ -63,7 +63,7 @@ templ Fleet(fleet openAPI.GetMyShips200Response) {
 			<tbody>
 				for _, ship := range fleet.Data {
 					<tr>
-						<td><a href={ templ.SafeURL(fmt.Sprintf("/fleet/%s", ship.GetSymbol())) }>{ ship.GetSymbol() }</a></td>
+						<td><a href={ templ.SafeURL(fmt.Sprintf("/fleet/ship/%s", ship.GetSymbol())) }>{ ship.GetSymbol() }</a></td>
 						<td>{ fmt.Sprint(ship.GetRegistration().Name) }</td>
 						<td>{ fmt.Sprint(ship.GetNav().SystemSymbol) }</td>
 						<td>{ fmt.Sprint(ship.GetCrew().Current) } / { fmt.Sprint(ship.GetCrew().Capacity) }</td>
@@ -72,14 +72,14 @@ templ Fleet(fleet openAPI.GetMyShips200Response) {
 						<td>{ fmt.Sprint(ship.GetEngine().Name) }</td>
 						<td>{ fmt.Sprint(ship.GetCooldown().RemainingSeconds) } seconds</td>
 						<td>
-							<p><b>Capacity: </b>{ fmt.Sprint(ship.Cargo.GetCapacity()) }</p>
+							<meter min="0" low="0" high={ fmt.Sprint(ship.GetCargo().Capacity) } max={ fmt.Sprint(ship.GetCargo().Capacity) } optimum={ fmt.Sprint((ship.GetCargo().Capacity / 10) * 8) } value={ fmt.Sprint(ship.GetCargo().Units) }>{ fmt.Sprint(ship.GetCargo().Units) }/{ fmt.Sprint(ship.GetCargo().Capacity) }</meter>
 							for _, good := range ship.Cargo.GetInventory() {
 								<p><b>Good: </b>{ fmt.Sprint(good.GetSymbol()) }</p>
 								<p><b>Quantity: </b>{ fmt.Sprint(good.GetUnits()) } / { fmt.Sprint(ship.Cargo.GetCapacity()) }</p>
 							}
 						</td>
 						<td>
-							{ fmt.Sprint(ship.GetFuel().Current) } / { fmt.Sprint(ship.GetFuel().Capacity) }
+							<meter min="0" low={ fmt.Sprint(ship.GetFuel().Capacity / 3) } max={ fmt.Sprint(ship.GetFuel().Capacity) } high={ fmt.Sprint(ship.GetFuel().Capacity) } optimum={ fmt.Sprint((ship.GetFuel().Capacity / 10) * 8) } value={ fmt.Sprint(ship.GetFuel().Current) }>{ fmt.Sprint(ship.GetFuel().Current) }/{ fmt.Sprint(ship.GetFuel().Capacity) }</meter>
 						</td>
 					</tr>
 				}

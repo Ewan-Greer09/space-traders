@@ -4,6 +4,7 @@ import (
 	"context"
 
 	openAPI "github.com/UnseenBook/spacetraders-go-sdk"
+	"github.com/golang-jwt/jwt"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 
@@ -48,14 +49,19 @@ func NewViewHandler(config *config.Config) *ViewHandler {
 }
 
 func (vh *ViewHandler) GetHeader(c echo.Context) error {
-	resp, _, err := vh.Client.DefaultAPI.GetStatus(c.Request().Context()).Execute()
+	vh.Client.GetConfig().AddDefaultHeader("Authorization", "")
+
+	_, r, err := vh.Client.DefaultAPI.GetStatus(c.Request().Context()).Execute()
 	if err != nil {
 		c.Logger().Error(err.Error())
 		return shared.Error(err).Render(c.Request().Context(), c.Response())
 	}
-	_, status := resp.GetStatusOk()
 
-	return shared.Header(status).Render(c.Request().Context(), c.Response())
+	if r.StatusCode != 200 {
+		return shared.Header(false).Render(c.Request().Context(), c.Response())
+	}
+
+	return shared.Header(true).Render(c.Request().Context(), c.Response())
 }
 
 func (vh *ViewHandler) GetFooter(c echo.Context) error {
@@ -65,10 +71,38 @@ func (vh *ViewHandler) GetFooter(c echo.Context) error {
 func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			session := c.Get("session")
-			if session != nil {
-				vh.Client.GetConfig().AddDefaultHeader("Authorization", "Bearer "+session.(string))
+			if c.Path() == "/login" || c.Path() == "/register" || c.Path() == "/com/header" || c.Path() == "/com/footer" {
+				return next(c)
 			}
+
+			cookie, err := c.Cookie("session")
+			if err != nil || cookie.Value == "" {
+				return next(c)
+			}
+
+			token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, echo.NewHTTPError(401, "Invalid token")
+				}
+
+				return []byte(vh.cfg.JWT_SECRET), nil
+
+			})
+			if err != nil {
+				next(c)
+			}
+
+			claims, ok := token.Claims.(jwt.MapClaims)
+			if !ok || !token.Valid {
+				return next(c)
+			}
+
+			apiKey := claims["apiKey"].(string)
+			if apiKey == "" {
+				return next(c)
+			}
+
+			vh.Client.GetConfig().AddDefaultHeader("Authorization", "Bearer "+apiKey)
 
 			return next(c)
 		}

@@ -4,19 +4,22 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 
+	"space-traders/repository/postgres"
 	"space-traders/service/views/components/login"
 	"space-traders/service/views/components/register"
 )
 
 func (vh *ViewHandler) MountLoginRoutes(e *echo.Echo) {
 	e.GET("/login", vh.GetLogin)
-	e.POST("/login", vh.HandleLogin)
-	e.POST("/login/username", vh.HandleLoginWithUsername)
 	e.GET("/register", vh.GetRegister)
-
+	e.POST("/login", vh.HandleLogin)
+	e.POST("/register", vh.HandleRegister)
+	e.GET("/logout", vh.Logout)
 }
 
 func (vh *ViewHandler) GetLogin(c echo.Context) error {
@@ -24,53 +27,38 @@ func (vh *ViewHandler) GetLogin(c echo.Context) error {
 }
 
 func (vh *ViewHandler) HandleLogin(c echo.Context) error {
-	key := c.FormValue("api-key")
-
-	vh.Client.GetConfig().AddDefaultHeader("Authorization", "Bearer "+key)
-
-	// validate that the key is valid
-	_, _, err := vh.Client.AgentsAPI.GetMyAgent(c.Request().Context()).Execute()
-	if err != nil {
-		return login.LoginFailure().Render(c.Request().Context(), c.Response())
-	}
-
-	cookie := &http.Cookie{
-		Name:     "session",
-		Value:    key,
-		Path:     "/",
-		SameSite: http.SameSiteLaxMode,
-		HttpOnly: true,
-		Expires:  time.Now().Add(24 * time.Hour),
-	}
-	c.SetCookie(cookie)
-
-	return login.LoginSuccess().Render(c.Request().Context(), c.Response())
-}
-
-func (vh *ViewHandler) HandleLoginWithUsername(c echo.Context) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 
-	user, err := vh.userDB.GetOneByUsername(c.Request().Context(), pgtype.Text{String: username})
+	user, err := vh.userDB.GetOneByUsername(c.Request().Context(), pgtype.Text{String: username, Valid: true})
 	if err != nil {
+		c.Logger().Error(err.Error())
 		return login.LoginFailure().Render(c.Request().Context(), c.Response())
 	}
 
-	if user.Password.String != password {
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password.String), []byte(password))
+	if err != nil {
+		c.Logger().Error(err.Error())
+		return login.LoginFailure().Render(c.Request().Context(), c.Response())
+	}
+
+	token := vh.generateUserJWT(username, user.ApiKey.String)
+	if token == "" {
+		c.Logger().Error("Failed to generate JWT")
 		return login.LoginFailure().Render(c.Request().Context(), c.Response())
 	}
 
 	cookie := &http.Cookie{
 		Name:     "session",
-		Value:    user.ApiKey.String,
+		Value:    token,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
 		Expires:  time.Now().Add(24 * time.Hour),
 	}
-	c.SetCookie(cookie)
 
-	return c.Redirect(http.StatusFound, "/")
+	c.SetCookie(cookie)
+	return login.LoginSuccess().Render(c.Request().Context(), c.Response())
 }
 
 func (vh *ViewHandler) Logout(c echo.Context) error {
@@ -91,4 +79,53 @@ func (vh *ViewHandler) Logout(c echo.Context) error {
 
 func (vh *ViewHandler) GetRegister(c echo.Context) error {
 	return register.Page().Render(c.Request().Context(), c.Response())
+}
+
+func (vh *ViewHandler) HandleRegister(c echo.Context) error {
+	username := c.FormValue("username")
+	password := c.FormValue("password")
+	apiKey := c.FormValue("api-key")
+
+	if username == "" || password == "" || apiKey == "" {
+		c.Logger().Error("Missing required fields")
+		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		c.Logger().Error(err.Error())
+		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
+	}
+
+	u := postgres.CreateUserParams{
+		Username: pgtype.Text{String: username, Valid: true},
+		Password: pgtype.Text{String: string(hashedPassword), Valid: true},
+		ApiKey:   pgtype.Text{String: apiKey, Valid: true},
+	}
+	_, err = vh.userDB.CreateUser(c.Request().Context(), u)
+	if err != nil {
+		c.Logger().Error(err.Error())
+		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
+	}
+
+	return register.RegisterSuccess().Render(c.Request().Context(), c.Response())
+}
+
+func (vh ViewHandler) generateUserJWT(username string, apiKey string) string {
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["username"] = username
+	claims["apiKey"] = apiKey
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+
+	token.Claims = claims
+
+	secret := []byte(vh.cfg.JWT_SECRET)
+
+	t, err := token.SignedString(secret)
+	if err != nil {
+		return err.Error()
+	}
+
+	return t
 }
