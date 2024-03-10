@@ -8,9 +8,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type User struct {
-	ID       int32
-	Username pgtype.Text
-	Password pgtype.Text
-	ApiKey   pgtype.Text
+type Agent struct {
+	ID              int32
+	Accountid       pgtype.Text
+	Symbol          pgtype.Text
+	HeadQuarters    pgtype.Text
+	Credits         pgtype.Int4
+	StartingFaction pgtype.Text
+	ShipCount       pgtype.Int4
+}
+
+type ApiKey struct {
+	ID  int32
+	Key pgtype.Text
+	UID pgtype.Text
+}
+
+type Player struct {
+	ID        int32
+	UserUid   pgtype.Text
+	Username  pgtype.Text
+	Password  pgtype.Text
+	Email     pgtype.Text
+	CreatedAt pgtype.Timestamp
 }

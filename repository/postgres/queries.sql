@@ -1,15 +1,29 @@
 -- name: GetAll :many
-SELECT * FROM users;
+SELECT * FROM players;
 
 -- name: GetOneByUsername :one
-SELECT * FROM users WHERE username = $1;
+SELECT * FROM players WHERE username = $1;
 
 -- name: CreateUser :one
 INSERT INTO
-    users (username, password, api_key)
-VALUES ($1, $2, $3)
+    players (
+        user_uid, username, password, email, created_at
+    )
+VALUES ($1, $2, $3, $4, $5)
 RETURNING
-    id,
-    username,
-    password,
-    api_key;
+    user_uid;
+
+-- name: CreateAPIKey :exec
+INSERT INTO
+    api_keys (key, u_id)
+SELECT $1, user_uid
+FROM players
+WHERE
+    username = $2;
+
+-- name: GetUserWithAPIKeyByUsername :one
+SELECT pl.*, ak.key
+FROM players pl
+    JOIN api_keys ak ON pl.user_uid = ak.u_id
+WHERE
+    pl.username = $1;

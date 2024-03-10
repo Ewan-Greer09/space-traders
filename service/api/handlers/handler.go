@@ -5,7 +5,8 @@ import (
 
 	openAPI "github.com/UnseenBook/spacetraders-go-sdk"
 	"github.com/golang-jwt/jwt"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 
 	"space-traders/repository/postgres"
@@ -36,14 +37,15 @@ func NewViewHandler(config *config.Config) *ViewHandler {
 	cfg.AddDefaultHeader("Content-Type", "application/json")
 	cfg.AddDefaultHeader("Accept", "application/json")
 
-	conn, err := pgx.Connect(context.Background(), config.DATABASE_URL)
+	// create a connection pool
+	pool, err := pgxpool.New(context.Background(), config.DATABASE_URL)
 	if err != nil {
 		panic(err)
 	}
 
 	return &ViewHandler{
 		Client: openAPI.NewAPIClient(cfg),
-		userDB: postgres.New(conn),
+		userDB: postgres.New(pool),
 		cfg:    config,
 	}
 }
@@ -72,16 +74,19 @@ func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if c.Path() == "/login" || c.Path() == "/register" || c.Path() == "/com/header" || c.Path() == "/com/footer" {
+				c.Logger().Info("Skipping auth for path: ", c.Path())
 				return next(c)
 			}
 
 			cookie, err := c.Cookie("session")
 			if err != nil || cookie.Value == "" {
+				c.Logger().Error(err.Error())
 				return next(c)
 			}
 
 			token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					c.Logger().Error("Invalid token method")
 					return nil, echo.NewHTTPError(401, "Invalid token")
 				}
 
@@ -89,20 +94,26 @@ func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {
 
 			})
 			if err != nil {
+				c.Logger().Error(err.Error())
 				next(c)
 			}
 
 			claims, ok := token.Claims.(jwt.MapClaims)
 			if !ok || !token.Valid {
+				c.Logger().Error("Invalid token")
 				return next(c)
 			}
 
-			apiKey := claims["apiKey"].(string)
-			if apiKey == "" {
+			user, err := vh.userDB.GetUserWithAPIKeyByUsername(c.Request().Context(), pgtype.Text{String: claims["username"].(string), Valid: true})
+			if err != nil {
+				c.Logger().Error(err.Error())
 				return next(c)
 			}
 
-			vh.Client.GetConfig().AddDefaultHeader("Authorization", "Bearer "+apiKey)
+			c.Set("apiKey", user.Key.String) // save this in the context to facilitate user lookups using the apikey as pkey
+			c.Set("username", claims["username"])
+
+			vh.Client.GetConfig().AddDefaultHeader("Authorization", "Bearer "+user.Key.String)
 
 			return next(c)
 		}

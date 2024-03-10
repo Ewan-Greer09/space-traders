@@ -11,53 +11,76 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createAPIKey = `-- name: CreateAPIKey :exec
+INSERT INTO
+    api_keys (key, u_id)
+SELECT $1, user_uid
+FROM players
+WHERE
+    username = $2
+`
+
+type CreateAPIKeyParams struct {
+	Key      pgtype.Text
+	Username pgtype.Text
+}
+
+func (q *Queries) CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) error {
+	_, err := q.db.Exec(ctx, createAPIKey, arg.Key, arg.Username)
+	return err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO
-    users (username, password, api_key)
-VALUES ($1, $2, $3)
+    players (
+        user_uid, username, password, email, created_at
+    )
+VALUES ($1, $2, $3, $4, $5)
 RETURNING
-    id,
-    username,
-    password,
-    api_key
+    user_uid
 `
 
 type CreateUserParams struct {
-	Username pgtype.Text
-	Password pgtype.Text
-	ApiKey   pgtype.Text
+	UserUid   pgtype.Text
+	Username  pgtype.Text
+	Password  pgtype.Text
+	Email     pgtype.Text
+	CreatedAt pgtype.Timestamp
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.Username, arg.Password, arg.ApiKey)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.Password,
-		&i.ApiKey,
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (pgtype.Text, error) {
+	row := q.db.QueryRow(ctx, createUser,
+		arg.UserUid,
+		arg.Username,
+		arg.Password,
+		arg.Email,
+		arg.CreatedAt,
 	)
-	return i, err
+	var user_uid pgtype.Text
+	err := row.Scan(&user_uid)
+	return user_uid, err
 }
 
 const getAll = `-- name: GetAll :many
-SELECT id, username, password, api_key FROM users
+SELECT id, user_uid, username, password, email, created_at FROM players
 `
 
-func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
+func (q *Queries) GetAll(ctx context.Context) ([]Player, error) {
 	rows, err := q.db.Query(ctx, getAll)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []Player
 	for rows.Next() {
-		var i User
+		var i Player
 		if err := rows.Scan(
 			&i.ID,
+			&i.UserUid,
 			&i.Username,
 			&i.Password,
-			&i.ApiKey,
+			&i.Email,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -70,17 +93,52 @@ func (q *Queries) GetAll(ctx context.Context) ([]User, error) {
 }
 
 const getOneByUsername = `-- name: GetOneByUsername :one
-SELECT id, username, password, api_key FROM users WHERE username = $1
+SELECT id, user_uid, username, password, email, created_at FROM players WHERE username = $1
 `
 
-func (q *Queries) GetOneByUsername(ctx context.Context, username pgtype.Text) (User, error) {
+func (q *Queries) GetOneByUsername(ctx context.Context, username pgtype.Text) (Player, error) {
 	row := q.db.QueryRow(ctx, getOneByUsername, username)
-	var i User
+	var i Player
 	err := row.Scan(
 		&i.ID,
+		&i.UserUid,
 		&i.Username,
 		&i.Password,
-		&i.ApiKey,
+		&i.Email,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserWithAPIKeyByUsername = `-- name: GetUserWithAPIKeyByUsername :one
+SELECT pl.id, pl.user_uid, pl.username, pl.password, pl.email, pl.created_at, ak.key
+FROM players pl
+    JOIN api_keys ak ON pl.user_uid = ak.u_id
+WHERE
+    pl.username = $1
+`
+
+type GetUserWithAPIKeyByUsernameRow struct {
+	ID        int32
+	UserUid   pgtype.Text
+	Username  pgtype.Text
+	Password  pgtype.Text
+	Email     pgtype.Text
+	CreatedAt pgtype.Timestamp
+	Key       pgtype.Text
+}
+
+func (q *Queries) GetUserWithAPIKeyByUsername(ctx context.Context, username pgtype.Text) (GetUserWithAPIKeyByUsernameRow, error) {
+	row := q.db.QueryRow(ctx, getUserWithAPIKeyByUsername, username)
+	var i GetUserWithAPIKeyByUsernameRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserUid,
+		&i.Username,
+		&i.Password,
+		&i.Email,
+		&i.CreatedAt,
+		&i.Key,
 	)
 	return i, err
 }

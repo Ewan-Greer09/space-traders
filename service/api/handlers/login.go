@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -30,7 +31,7 @@ func (vh *ViewHandler) HandleLogin(c echo.Context) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 
-	user, err := vh.userDB.GetOneByUsername(c.Request().Context(), pgtype.Text{String: username, Valid: true})
+	user, err := vh.userDB.GetUserWithAPIKeyByUsername(c.Request().Context(), pgtype.Text{String: username, Valid: true})
 	if err != nil {
 		c.Logger().Error(err.Error())
 		return login.LoginFailure().Render(c.Request().Context(), c.Response())
@@ -42,8 +43,8 @@ func (vh *ViewHandler) HandleLogin(c echo.Context) error {
 		return login.LoginFailure().Render(c.Request().Context(), c.Response())
 	}
 
-	token := vh.generateUserJWT(username, user.ApiKey.String)
-	if token == "" {
+	token, err := vh.generateUserJWT(username)
+	if err != nil {
 		c.Logger().Error("Failed to generate JWT")
 		return login.LoginFailure().Render(c.Request().Context(), c.Response())
 	}
@@ -98,11 +99,21 @@ func (vh *ViewHandler) HandleRegister(c echo.Context) error {
 	}
 
 	u := postgres.CreateUserParams{
+		UserUid:  pgtype.Text{String: uuid.NewString(), Valid: true},
 		Username: pgtype.Text{String: username, Valid: true},
 		Password: pgtype.Text{String: string(hashedPassword), Valid: true},
-		ApiKey:   pgtype.Text{String: apiKey, Valid: true},
+		Email:    pgtype.Text{String: "", Valid: false},
 	}
 	_, err = vh.userDB.CreateUser(c.Request().Context(), u)
+	if err != nil {
+		c.Logger().Error(err.Error())
+		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
+	}
+
+	err = vh.userDB.CreateAPIKey(c.Request().Context(), postgres.CreateAPIKeyParams{
+		Key:      pgtype.Text{String: apiKey, Valid: true},
+		Username: pgtype.Text{String: username, Valid: true},
+	})
 	if err != nil {
 		c.Logger().Error(err.Error())
 		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
@@ -111,11 +122,10 @@ func (vh *ViewHandler) HandleRegister(c echo.Context) error {
 	return register.RegisterSuccess().Render(c.Request().Context(), c.Response())
 }
 
-func (vh ViewHandler) generateUserJWT(username string, apiKey string) string {
+func (vh ViewHandler) generateUserJWT(username string) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = username
-	claims["apiKey"] = apiKey
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
 	token.Claims = claims
@@ -124,8 +134,8 @@ func (vh ViewHandler) generateUserJWT(username string, apiKey string) string {
 
 	t, err := token.SignedString(secret)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
-	return t
+	return t, nil
 }

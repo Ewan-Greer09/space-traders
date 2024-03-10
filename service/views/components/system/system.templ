@@ -1,9 +1,9 @@
 package system
 
-// import "fmt"
+import "fmt"
 import "space-traders/service/views/components/shared"
+import openAPI "github.com/UnseenBook/spacetraders-go-sdk"
 
-// import openAPI "github.com/UnseenBook/spacetraders-go-sdk"
 templ Page() {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -37,13 +37,69 @@ templ Page() {
 templ Content() {
 	<main>
 		<h1>System</h1>
-		<div id="system-info" hx-get="/com/system-info" hx-swap="outerHTML" hx-trigger="load">
-			<!-- populated with an hx-get request to the server -->
-			loading...
-		</div>
-		<div id="system-locations" hx-get="/com/system-locations" hx-swap="outerHTML" hx-trigger="load">
-			<!-- populated with an hx-get request to the server -->
-			loading...
+		<div class="grid-container">
+			<div id="system-locations" hx-get="/system/locations" hx-swap="outerHTML" hx-trigger="load" hx-target="this">
+				<!-- populated with an hx-get request to the server -->
+				loading...
+			</div>
+			<div id="system-info" hx-get="/system/info" hx-swap="outerHTML" hx-trigger="load" hx-target="this">
+				<!-- populated with an hx-get request to the server -->
+				loading...
+			</div>
 		</div>
 	</main>
+}
+
+templ SystemInfo(sysinfo openAPI.System) {
+	<div>
+		<h2>System Info</h2>
+		<div id="system-info">
+			<div>
+				<p><b>Name:</b> { sysinfo.Symbol }</p>
+				<p><b>Location:</b> { sysinfo.SectorSymbol }</p>
+				<p><b>Coordinates:</b> { fmt.Sprint(sysinfo.X) }, { fmt.Sprint(sysinfo.Y) }</p>
+				<p><b>Type:</b> { fmt.Sprint(sysinfo.Type) }</p>
+			</div>
+			<div>
+				<div id="waypoints">
+					<button hx-get="/system/waypoints" hx-trigger="click" hx-target="#waypoints" hx-swap="outerHTML">Get System Waypoints ( { fmt.Sprint(len(sysinfo.Waypoints)) } )</button>
+				</div>
+			</div>
+			for _, faction := range sysinfo.Factions {
+				{ fmt.Sprint(faction) }
+			}
+		</div>
+	</div>
+}
+
+templ Waypoint(waypoint openAPI.SystemWaypoint) {
+	<a href={ templ.SafeURL(fmt.Sprintf("/system/waypoint/%s", waypoint.Symbol)) } class="card">
+		<div class="card-content">
+			<p><b>Symbol:</b> { fmt.Sprint(waypoint.Symbol) }</p>
+			<p><b>Type:</b> { fmt.Sprint(waypoint.Type) }</p>
+			<p><b>Coordinates:</b> { fmt.Sprint(waypoint.X) }, { fmt.Sprint(waypoint.Y) }</p>
+			<p><b>Orbitals:</b> { fmt.Sprint(len(waypoint.Orbitals)) }</p>
+			<p>
+				<b>Orbits:</b>
+				if waypoint.Orbits != nil {
+					fmt.Sprint(*waypoint.Orbits)
+				} else {
+					"None"
+				}
+			</p>
+		</div>
+	</a>
+}
+
+templ WaypointList(waypoints []openAPI.SystemWaypoint) {
+	for _, waypoint := range waypoints {
+		@Waypoint(waypoint)
+	}
+}
+
+templ SystemLocations() {
+	<div class="grid-item">
+		<h2>System Locations</h2>
+		<div id="system-locations"></div>
+	</div>
 }

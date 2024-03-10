@@ -10,47 +10,40 @@ templ Header(server_status bool) {
 
 templ Nav() {
 	<nav>
-		<a href="/">
+		<a rel="preload" href="/" title="Home">
 			<span class="material-symbols-outlined">
 				space_dashboard
 			</span>
-			<span>Home</span>
 		</a>
-		<a href="/fleet">
+		<a rel="preload" href="/fleet" title="Fleet">
 			<span class="material-symbols-outlined">
 				rocket_launch
 			</span>
-			<span>Fleet</span>
 		</a>
-		<a href="/system">
+		<a rel="preload" href="/system" title="System">
 			<span class="material-symbols-outlined">
 				radar
 			</span>
-			<span>system</span>
 		</a>
-		<a href="/loans">
+		<a rel="preload" href="/loans" title="Loans">
 			<span class="material-symbols-outlined">
 				credit_score
 			</span>
-			<span>Loans</span>
 		</a>
-		<a href="/login">
+		<a rel="preload" href="/login" title="Login">
 			<span class="material-symbols-outlined">
 				login
 			</span>
-			<span>Login</span>
 		</a>
-		<a href="/register">
+		<a rel="preload" href="/register" title="Register">
 			<span class="material-symbols-outlined">
 				how_to_reg
 			</span>
-			<span>Register</span>
 		</a>
-		<a href="/logout">
+		<a rel="preload" href="/logout" title="Logout">
 			<span class="material-symbols-outlined">
 				logout
 			</span>
-			<span>Logout</span>
 		</a>
 	</nav>
 }
