@@ -47,7 +47,7 @@ func (a *API) Routes() {
 	a.e.Use(middleware.Secure())
 	a.e.Use(a.ViewHandler.AddKeyToReq())
 
-	a.e.Static("/static", "service/views/css")
+	a.e.Static("/static", "service/views")
 	a.e.GET("/favicon.ico", a.ViewHandler.Favicon)
 
 	a.ViewHandler.MountIndexRoutes(a.e)

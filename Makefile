@@ -1,4 +1,5 @@
 make:
 	@templ generate 
 	@docker compose up -d
-	@go run cmd/main/main.go
+	@go build -o bin/main cmd/main/main.go
+	@./bin/main
