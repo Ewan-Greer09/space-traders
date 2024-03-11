@@ -64,7 +64,9 @@ templ Fleet(fleet openAPI.GetMyShips200Response) {
 				for _, ship := range fleet.Data {
 					<tr>
 						<td><a href={ templ.SafeURL(fmt.Sprintf("/fleet/ship/%s", ship.GetSymbol())) }>{ ship.GetSymbol() }</a></td>
-						<td>{ fmt.Sprint(ship.GetRegistration().Name) }</td>
+						<td>
+							<p>{ fmt.Sprint(ship.GetRegistration().Name) } ({ fmt.Sprint(ship.GetRegistration().Role) })</p>
+						</td>
 						<td>{ fmt.Sprint(ship.GetNav().WaypointSymbol) }</td>
 						<td>
 							<p>{ fmt.Sprint(ship.GetCrew().Current) } / { fmt.Sprint(ship.GetCrew().Capacity) }</p>
