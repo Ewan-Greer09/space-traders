@@ -3,7 +3,9 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
+	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/go-echarts/go-echarts/v2/charts"
@@ -19,6 +21,8 @@ func (vh *ViewHandler) MountSystemRoutes(e *echo.Echo) {
 	e.GET("/system/info", vh.SystemInfo)
 	e.GET("/system/waypoints", vh.SystemWaypoints)
 	e.GET("/system/locations", vh.SystemLocations)
+	e.GET("/system/waypoint/:id", vh.SystemWaypointInfo)
+	e.GET("/system/waypoint/:id/info", vh.SystemWaypointInfoContent)
 }
 
 func (vh *ViewHandler) SystemPage(c echo.Context) error {
@@ -79,7 +83,7 @@ func (vh *ViewHandler) SystemLocations(c echo.Context) error {
 
 	var points []opts.ScatterData
 	for _, item := range resp.Data.Waypoints {
-		points = append(points, opts.ScatterData{Value: []interface{}{item.X, item.Y}, Name: item.Symbol})
+		points = append(points, opts.ScatterData{Value: []interface{}{item.X, item.Y}, Name: fmt.Sprint(item.Symbol + " - " + string(item.Type))})
 	}
 
 	scatter := charts.NewScatter()
@@ -160,4 +164,26 @@ func removeUnwantedElements(htmlStr string) (string, error) {
 	f(doc)
 
 	return b.String(), nil
+}
+
+func (vh *ViewHandler) SystemWaypointInfo(c echo.Context) error {
+	waypointID := c.Param("id")
+	return system.WaypointPage(waypointID).Render(c.Request().Context(), c.Response())
+}
+
+func (vh *ViewHandler) SystemWaypointInfoContent(c echo.Context) error {
+	waypointID := c.Param("id")
+	waypointIDParts := strings.Split(waypointID, "-")
+
+	for i, part := range waypointIDParts {
+		waypointIDParts[i] = strings.ToUpper(part)
+	}
+
+	resp, _, err := vh.Client.SystemsAPI.GetWaypoint(c.Request().Context(), fmt.Sprintf("%s-%s", waypointIDParts[0], waypointIDParts[1]), strings.ToUpper(waypointID)).Execute()
+	if err != nil {
+		c.Logger().Error(err)
+		return err
+	}
+
+	return system.WaypointInfo(resp.Data).Render(c.Request().Context(), c.Response())
 }

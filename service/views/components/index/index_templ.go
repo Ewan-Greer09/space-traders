@@ -55,11 +55,11 @@ func Content() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><h1>Dashboard</h1>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Introduction().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = dashboard().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -74,7 +74,7 @@ func Content() templ.Component {
 	})
 }
 
-func Introduction() templ.Component {
+func dashboard() templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -87,7 +87,7 @@ func Introduction() templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p>Welcome, to the SpaceTraders Dashboard! This is a tool designed to help you manage your SpaceTraders account. It provides a UI around the SpaceTraders API, allowing you to view your account information, ships, and more.<br>This is a work in progress, so please be patient as we continue to add more features.<br><br>To get started, please <a href=\"/login\">login</a> to your SpaceTraders account.</p>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><h1>Dashboard</h1><div class=\"container\"><div id=\"ships\"><div hx-get=\"/fleet/list\" hx-trigger=\"load\" hx-swap=\"outerHTML\" hx-target=\"#ships\"></div></div></div></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

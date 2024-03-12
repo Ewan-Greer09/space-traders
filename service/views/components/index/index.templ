@@ -34,18 +34,20 @@ templ Page() {
 
 templ Content() {
 	<main>
-		<h1>Dashboard</h1>
-		@Introduction()
+		@dashboard()
 	</main>
 }
 
-templ Introduction() {
-	<p>
-		Welcome, to the SpaceTraders Dashboard! This is a tool designed to help you manage your SpaceTraders account. It provides a UI around the SpaceTraders API, allowing you to view your account information, ships, and more.
-		<br/>
-		This is a work in progress, so please be patient as we continue to add more features.
-		<br/>
-		<br/>
-		To get started, please <a href="/login">login</a> to your SpaceTraders account.
-	</p>
+templ dashboard() {
+	<main>
+		<h1>Dashboard</h1>
+		// placeholder for a bunch of graphs and forms to allow for the basic functionality of the SpaceTraders API game loop
+		// moving ships, buying/selling goods, etc.
+		// creating automations
+		<div class="container">
+			<div id="ships">
+				<div hx-get="/fleet/list" hx-trigger="load" hx-swap="outerHTML" hx-target="#ships"></div>
+			</div>
+		</div>
+	</main>
 }

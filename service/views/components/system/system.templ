@@ -51,7 +51,6 @@ templ Content() {
 
 templ SystemInfo(sysinfo openAPI.System) {
 	<div>
-		<h2>System Info</h2>
 		<div id="system-info">
 			<div class="sector-info">
 				<p><b>Name:</b> { sysinfo.Symbol }</p>
@@ -73,8 +72,8 @@ templ SystemInfo(sysinfo openAPI.System) {
 
 templ Waypoint(waypoint openAPI.SystemWaypoint) {
 	<a href={ templ.SafeURL(fmt.Sprintf("/system/waypoint/%s", waypoint.Symbol)) } class="card">
+		<img src={ fmt.Sprintf("/static/img/%s.png", waypoint.Type) } alt={ fmt.Sprint(waypoint.Type) } class="icon" title={ fmt.Sprint(waypoint.Type) }/>
 		<div class="card-content">
-			<img src={ fmt.Sprintf("/static/img/%s.png", waypoint.Type) } alt={ fmt.Sprint(waypoint.Type) } class="icon" title={ fmt.Sprint(waypoint.Type) }/>
 			<p><b>{ fmt.Sprint(waypoint.Symbol) }</b></p>
 			<p>{ fmt.Sprint(waypoint.X) }, { fmt.Sprint(waypoint.Y) }</p>
 			<p><b>Orbitals:</b> { fmt.Sprint(len(waypoint.Orbitals)) }</p>
@@ -97,7 +96,6 @@ templ WaypointList(waypoints []openAPI.SystemWaypoint) {
 }
 
 templ SystemLocations(chart templ.Component) {
-	<h2>System Locations</h2>
 	<div id="system-locations">
 		@chart
 	</div>
