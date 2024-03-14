@@ -60,11 +60,11 @@ func (c *Client) SendToOrbit(symbol string) error {
 }
 
 func (c *Client) NavigateShip(systemSymbol, waypointSymbol string) (*models.Waypoint, error) {
-	type navigateReq struct {
+	resp, err := c.resty.R().SetBody(struct {
 		WaypointSymbol string `json:"waypointSymbol"`
-	}
-
-	resp, err := c.resty.R().SetBody(navigateReq{WaypointSymbol: waypointSymbol}).
+	}{
+		WaypointSymbol: waypointSymbol,
+	}).
 		Post(fmt.Sprintf("/my/ships/%s/navigate", systemSymbol))
 	if err != nil {
 		return nil, err
@@ -72,12 +72,6 @@ func (c *Client) NavigateShip(systemSymbol, waypointSymbol string) (*models.Wayp
 	defer resp.RawBody().Close()
 
 	if resp.StatusCode() != 200 {
-		var data map[string]interface{}
-		err = json.NewDecoder(resp.RawBody()).Decode(&data)
-		if err != nil {
-			return nil, err
-		}
-
 		return nil, fmt.Errorf("unable to navigate ship:" + resp.Status())
 	}
 
