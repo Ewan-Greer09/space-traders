@@ -9,9 +9,7 @@ INSERT INTO
     players (
         user_uid, username, password, email, created_at
     )
-VALUES ($1, $2, $3, $4, $5)
-RETURNING
-    user_uid;
+VALUES ($1, $2, $3, $4, $5) RETURNING user_uid;
 
 -- name: CreateAPIKey :exec
 INSERT INTO
@@ -27,3 +25,13 @@ FROM players pl
     JOIN api_keys ak ON pl.user_uid = ak.u_id
 WHERE
     pl.username = $1;
+
+-- name: CreateSystem :one
+INSERT INTO
+    systems (
+        symbol, sector_symbol, type, x, y
+    )
+VALUES ($1, $2, $3, $4, $5) RETURNING symbol;
+
+-- name: GetSystemBySymbol :one
+SELECT * FROM systems WHERE symbol = $1;

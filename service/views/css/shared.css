@@ -46,12 +46,13 @@ span {
 button {
   background-color: var(--tertiary-color);
   color: var(--primary-text-color);
-  padding: 10px 30px;
+  padding: 8px 32px;
   border: 2px solid var(--secondary-color);
   border-radius: 8px;
   cursor: pointer;
   transition: ease-in-out 0.2s;
   font-size: 1.2rem;
+  height: 48px;
 }
 
 button:hover {
@@ -63,7 +64,7 @@ button:hover {
 input[type="password"],
 input[type="text"],
 input[type="email"] {
-  padding: 10px;
+  padding: 8px;
   border-radius: 8px;
   border: 2px solid var(--tertiary-color);
   background-color: var(--secondary-color);

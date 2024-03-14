@@ -30,14 +30,41 @@ func (q *Queries) CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) erro
 	return err
 }
 
+const createSystem = `-- name: CreateSystem :one
+INSERT INTO
+    systems (
+        symbol, sector_symbol, type, x, y
+    )
+VALUES ($1, $2, $3, $4, $5) RETURNING symbol
+`
+
+type CreateSystemParams struct {
+	Symbol       pgtype.Text
+	SectorSymbol pgtype.Text
+	Type         pgtype.Text
+	X            pgtype.Int4
+	Y            pgtype.Int4
+}
+
+func (q *Queries) CreateSystem(ctx context.Context, arg CreateSystemParams) (pgtype.Text, error) {
+	row := q.db.QueryRow(ctx, createSystem,
+		arg.Symbol,
+		arg.SectorSymbol,
+		arg.Type,
+		arg.X,
+		arg.Y,
+	)
+	var symbol pgtype.Text
+	err := row.Scan(&symbol)
+	return symbol, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO
     players (
         user_uid, username, password, email, created_at
     )
-VALUES ($1, $2, $3, $4, $5)
-RETURNING
-    user_uid
+VALUES ($1, $2, $3, $4, $5) RETURNING user_uid
 `
 
 type CreateUserParams struct {
@@ -106,6 +133,24 @@ func (q *Queries) GetOneByUsername(ctx context.Context, username pgtype.Text) (P
 		&i.Password,
 		&i.Email,
 		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getSystemBySymbol = `-- name: GetSystemBySymbol :one
+SELECT id, symbol, sector_symbol, type, x, y FROM systems WHERE symbol = $1
+`
+
+func (q *Queries) GetSystemBySymbol(ctx context.Context, symbol pgtype.Text) (System, error) {
+	row := q.db.QueryRow(ctx, getSystemBySymbol, symbol)
+	var i System
+	err := row.Scan(
+		&i.ID,
+		&i.Symbol,
+		&i.SectorSymbol,
+		&i.Type,
+		&i.X,
+		&i.Y,
 	)
 	return i, err
 }

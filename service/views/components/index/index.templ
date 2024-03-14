@@ -19,6 +19,7 @@ templ Page() {
 				rel="stylesheet"
 			/>
 			<link rel="stylesheet" href="/static/css/shared.css"/>
+			<link rel="stylesheet" href="/static/css/nav_widget.css"/>
 		</head>
 		<body>
 			<header hx-get="/com/header" hx-swap="outerHTML" hx-trigger="load">
@@ -49,5 +50,14 @@ templ dashboard() {
 				<div hx-get="/fleet/list" hx-trigger="load" hx-swap="outerHTML" hx-target="#ships"></div>
 			</div>
 		</div>
+		<div class="container">
+			<div id="move-ship">
+				<div hx-get="/move-ship" hx-trigger="load" hx-swap="outerHTML" hx-target="#move-ship"></div>
+			</div>
+		</div>
 	</main>
+}
+
+templ GetShipLocationsSuccess() {
+	<p>Success</p>
 }

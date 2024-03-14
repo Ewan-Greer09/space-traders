@@ -24,6 +24,18 @@ type ApiKey struct {
 	UID pgtype.Text
 }
 
+type Faction struct {
+	ID             int32
+	Symbol         pgtype.Text
+	WaypointSymbol pgtype.Text
+}
+
+type Orbital struct {
+	ID             int32
+	Symbol         pgtype.Text
+	WaypointSymbol pgtype.Text
+}
+
 type Player struct {
 	ID        int32
 	UserUid   pgtype.Text
@@ -31,4 +43,23 @@ type Player struct {
 	Password  pgtype.Text
 	Email     pgtype.Text
 	CreatedAt pgtype.Timestamp
+}
+
+type System struct {
+	ID           int32
+	Symbol       pgtype.Text
+	SectorSymbol pgtype.Text
+	Type         pgtype.Text
+	X            pgtype.Int4
+	Y            pgtype.Int4
+}
+
+type Waypoint struct {
+	ID           int32
+	SystemSymbol pgtype.Text
+	Symbol       pgtype.Text
+	Type         pgtype.Text
+	X            pgtype.Int4
+	Y            pgtype.Int4
+	Orbits       pgtype.Text
 }

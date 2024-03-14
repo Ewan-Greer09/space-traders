@@ -1,0 +1,62 @@
+package widgets
+
+import "fmt"
+import "space-traders/models"
+
+import openAPI "github.com/UnseenBook/spacetraders-go-sdk"
+
+templ NavWidget(ships []openAPI.Ship) {
+	<div class="container" id="left">
+		<form hx-get="/submit-form" hx-target="#selected-ship" hx-swap="outerHTML">
+			<select name="ship-select" id="ship-select">
+				for _, ship := range ships {
+					<option name="ship-symbol" value={ ship.GetSymbol() }>
+						<b>{ ship.GetSymbol() }</b>
+					</option>
+				}
+			</select>
+			<button type="submit">Select Ship</button>
+		</form>
+		<div id="selected-ship"></div>
+	</div>
+}
+
+templ SelectedShip(ship openAPI.Ship, system []openAPI.Waypoint) {
+	<div id="selected-ship" class="container">
+		<h3>Ship</h3>
+		<a href={ templ.SafeURL(fmt.Sprintf("fleet/ship/%s", ship.Symbol)) }><h3>{ ship.GetSymbol() }</h3></a>
+		<p>Location:{ ship.Nav.GetWaypointSymbol() }</p>
+		<p>Cargo: { fmt.Sprint(ship.GetCargo().Units) } / { fmt.Sprint(ship.Cargo.GetCapacity()) }</p>
+		<p>Fuel: { fmt.Sprint(ship.GetFuel().Current) } / { fmt.Sprint(ship.GetFuel().Capacity) }</p>
+		<p>Cooldown: { fmt.Sprint(ship.GetCooldown().RemainingSeconds) } Seconds</p>
+	</div>
+	<div id="system-info" class="container">
+		<h3>Destination</h3>
+		<form hx-get="/set-destination" hx-target="#selected-dest" hx-swap="outerHTML">
+			<select name="waypoint-symbol" id="destination-select">
+				for _, waypoint := range system {
+					<option name="destination-symbol" value={ waypoint.GetSymbol() }>
+						<b>{ waypoint.GetSymbol() }</b>
+					</option>
+				}
+			</select>
+			<input type="hidden" value={ ship.Nav.SystemSymbol } name="system-symbol"/>
+			<input type="hidden" value={ ship.Symbol } name="ship-symbol"/>
+			<button type="submit">Set Destination</button>
+		</form>
+		<div id="selected-dest" class="container"></div>
+	</div>
+}
+
+templ SelectedDest(dest models.Waypoint) {
+	<div id="selected-dest" class="container">
+		<h3>Destination</h3>
+		<p>{ dest.Symbol }</p>
+		<p>Traits: </p>
+		for _, trait := range dest.Traits {
+			<p>{ fmt.Sprint(trait.Symbol) }</p>
+			<p>{ fmt.Sprint(trait.Description) }</p>
+		}
+		<p>{ fmt.Sprintf("%d, %d", dest.X, dest.Y) }</p>
+	</div>
+}

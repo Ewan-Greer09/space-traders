@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"space-traders/repository/postgres"
+	"space-traders/service/api/client"
 	"space-traders/service/config"
 	"space-traders/service/views/components/shared"
 )
@@ -22,9 +23,10 @@ type ErrorResponse struct {
 }
 
 type ViewHandler struct {
-	Client *openAPI.APIClient
-	userDB *postgres.Queries
-	cfg    *config.Config
+	Client   *openAPI.APIClient
+	userDB   *postgres.Queries
+	cfg      *config.Config
+	myClient *client.Client
 }
 
 func (vh *ViewHandler) MountSharedRoutes(e *echo.Echo) {
@@ -44,9 +46,10 @@ func NewViewHandler(config *config.Config) *ViewHandler {
 	}
 
 	return &ViewHandler{
-		Client: openAPI.NewAPIClient(cfg),
-		userDB: postgres.New(pool),
-		cfg:    config,
+		Client:   openAPI.NewAPIClient(cfg),
+		userDB:   postgres.New(pool),
+		cfg:      config,
+		myClient: client.NewClient(),
 	}
 }
 
@@ -114,6 +117,7 @@ func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {
 			c.Set("username", claims["username"])
 
 			vh.Client.GetConfig().AddDefaultHeader("Authorization", "Bearer "+user.Key.String)
+			vh.myClient.SetHeader("Authorization", "Bearer "+user.Key.String)
 
 			return next(c)
 		}
