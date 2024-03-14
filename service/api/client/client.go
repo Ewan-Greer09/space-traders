@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/go-resty/resty/v2"
 
@@ -31,6 +30,7 @@ func (c *Client) GetMyShips(symbol string) (*models.GetMyShip200Response, error)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.RawBody().Close()
 
 	if resp.StatusCode() != 200 {
 		return nil, fmt.Errorf("unable to get ship location: " + resp.Status())
@@ -50,6 +50,7 @@ func (c *Client) SendToOrbit(symbol string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.RawBody().Close()
 
 	if resp.StatusCode() != 200 {
 		return fmt.Errorf("unable to orbit ship")
@@ -58,32 +59,30 @@ func (c *Client) SendToOrbit(symbol string) error {
 	return nil
 }
 
-func (c *Client) NavigateShip(symbol, waypointSymbol string) (*models.Waypoint, error) {
+func (c *Client) NavigateShip(systemSymbol, waypointSymbol string) (*models.Waypoint, error) {
 	type navigateReq struct {
 		WaypointSymbol string `json:"waypointSymbol"`
 	}
 
-	navResp, err := c.resty.R().SetDoNotParseResponse(true).SetBody(navigateReq{WaypointSymbol: waypointSymbol}).
-		Post(fmt.Sprintf("/my/ships/%s/navigate", symbol))
-
+	resp, err := c.resty.R().SetBody(navigateReq{WaypointSymbol: waypointSymbol}).
+		Post(fmt.Sprintf("/my/ships/%s/navigate", systemSymbol))
 	if err != nil {
 		return nil, err
 	}
+	defer resp.RawBody().Close()
 
-	if navResp.StatusCode() != 200 {
+	if resp.StatusCode() != 200 {
 		var data map[string]interface{}
-		err = json.NewDecoder(navResp.RawBody()).Decode(&data)
+		err = json.NewDecoder(resp.RawBody()).Decode(&data)
 		if err != nil {
 			return nil, err
 		}
 
-		log.Printf("navigate ship error: %v", data)
-
-		return nil, fmt.Errorf("unable to navigate ship:" + navResp.Status())
+		return nil, fmt.Errorf("unable to navigate ship:" + resp.Status())
 	}
 
 	var waypointData models.Waypoint
-	err = json.NewDecoder(navResp.RawBody()).Decode(&waypointData)
+	err = json.NewDecoder(resp.RawBody()).Decode(&waypointData)
 	if err != nil {
 		return nil, err
 	}
