@@ -1,6 +1,6 @@
 module space-traders
 
-go 1.21.6
+go 1.21
 
 require (
 	github.com/UnseenBook/spacetraders-go-sdk v0.0.0-20240209070827-89c64aef50b6
