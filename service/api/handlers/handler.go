@@ -5,7 +5,6 @@ import (
 
 	openAPI "github.com/UnseenBook/spacetraders-go-sdk"
 	"github.com/go-sql-driver/mysql"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 
