@@ -20,6 +20,7 @@ templ Page() {
 			/>
 			<link rel="stylesheet" href="/static/css/shared.css"/>
 			<link rel="stylesheet" href="/static/css/nav_widget.css"/>
+			// <script src="https://cdn.tailwindcss.com"></script>
 		</head>
 		<body>
 			<header hx-get="/com/header" hx-swap="outerHTML" hx-trigger="load">
@@ -52,7 +53,7 @@ templ dashboard() {
 		</div>
 		<div class="container">
 			<div id="move-ship">
-				<div hx-get="/move-ship" hx-trigger="load" hx-swap="outerHTML" hx-target="#move-ship"></div>
+				<div hx-get="/widgets/navigation" hx-trigger="load" hx-swap="outerHTML" hx-target="#move-ship"></div>
 			</div>
 		</div>
 	</main>

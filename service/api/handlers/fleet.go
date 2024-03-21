@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 
-	"space-traders/repository/postgres"
+	"space-traders/repository/mysql"
 	"space-traders/service/views/components/fleet"
 	"space-traders/service/views/components/shared"
 	"space-traders/service/views/components/ship"
@@ -16,6 +16,7 @@ func (vh *ViewHandler) MountFleetRoutes(e *echo.Echo) {
 	e.GET("/fleet", vh.GetFleet)
 	e.GET("/fleet/list", vh.GetFleetList)
 	e.GET("/fleet/ship/:symbol", vh.GetFleetShip)
+	e.GET("/fleet/ship/:symbol/nav", vh.GetShipsNav)
 }
 
 func (vh *ViewHandler) GetFleet(c echo.Context) error {
@@ -31,7 +32,7 @@ func (vh *ViewHandler) GetFleetList(c echo.Context) error {
 
 	err = vh.addSystems(c)
 	if err != nil {
-		c.Logger().Error(err.Error())
+		c.Logger().Info(err.Error())
 	}
 
 	return fleet.Fleet(*resp).Render(c.Request().Context(), c.Response())
@@ -62,17 +63,21 @@ func (vh *ViewHandler) addSystems(c echo.Context) error {
 		}
 
 		// store the system details in the database
-		_, err = vh.userDB.CreateSystem(context.Background(), postgres.CreateSystemParams{
-			Symbol:       pgtype.Text{String: resp.Data.Symbol, Valid: true},
-			SectorSymbol: pgtype.Text{String: resp.Data.SectorSymbol, Valid: true},
-			Type:         pgtype.Text{String: string(resp.Data.Type), Valid: true},
-			X:            pgtype.Int4{Int32: int32(resp.Data.X), Valid: true},
-			Y:            pgtype.Int4{Int32: int32(resp.Data.Y), Valid: true},
+		err = vh.userDB.CreateSystem(c.Request().Context(), mysql.CreateSystemParams{
+			Symbol:       sql.NullString{String: resp.Data.Symbol, Valid: true},
+			SectorSymbol: sql.NullString{String: resp.Data.SectorSymbol, Valid: true},
+			Type:         sql.NullString{String: string(resp.Data.GetType()), Valid: true},
+			X:            sql.NullInt32{Int32: int32(resp.Data.X), Valid: true},
+			Y:            sql.NullInt32{Int32: int32(resp.Data.Y), Valid: true},
 		})
 		if err != nil {
 			return err
 		}
 	}
 
+	return nil
+}
+
+func (vh *ViewHandler) GetShipsNav(c echo.Context) error {
 	return nil
 }

@@ -34,7 +34,6 @@ func (a *API) Start() error {
 	if err := a.e.Start(fmt.Sprintf("%s:%s", a.Cfg.Host, a.Cfg.Port)); err != nil {
 		return err
 	}
-
 	return nil
 }
 

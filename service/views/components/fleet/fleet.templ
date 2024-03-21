@@ -67,7 +67,21 @@ templ Fleet(fleet openAPI.GetMyShips200Response) {
 						<td>
 							<p>{ fmt.Sprint(ship.GetRegistration().Name) } ({ fmt.Sprint(ship.GetRegistration().Role) })</p>
 						</td>
-						<td>{ fmt.Sprint(ship.GetNav().WaypointSymbol) }</td>
+						<td>
+							if ship.Nav.Status != "IN_TRANSIT" {
+								<p>{ fmt.Sprint(ship.Nav.WaypointSymbol) }</p>
+								<p>{ fmt.Sprint(ship.Nav.Status) }</p>
+							} else {
+								<p>
+									{ fmt.Sprint(ship.Nav.WaypointSymbol) }
+									<span class="material-symbols-outlined">
+										arrow_forward
+									</span>
+									{ fmt.Sprint(ship.Nav.Route.Destination.Symbol) }
+								</p>
+								<p>{ fmt.Sprint(ship.Nav.Status) }</p>
+							}
+						</td>
 						<td>
 							<p>{ fmt.Sprint(ship.GetCrew().Current) } / { fmt.Sprint(ship.GetCrew().Capacity) }</p>
 							<meter min="0" low="0" high={ fmt.Sprint((ship.GetCrew().Capacity / 10) * 9) } max={ fmt.Sprint(ship.GetCrew().Capacity) } optimum={ fmt.Sprint(ship.GetCrew().Capacity / 2) } value={ fmt.Sprint(ship.GetCrew().Current) }>{ fmt.Sprint(ship.GetCrew().Current) }/{ fmt.Sprint(ship.GetCrew().Capacity) }</meter>

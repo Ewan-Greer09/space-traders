@@ -19,19 +19,23 @@ type Config struct {
 	LogFile  string `mapstructure:"log_file"`
 
 	// Client :env
-	API_ACCESS_TOKEN string `mapstructure:"API_ACCESS_TOKEN"`
+	ApiAccessToken string `mapstructure:"API_ACCESS_TOKEN"`
 
 	// MaxGoRoutines is the maximum number of go routines for automated tasks / workers
 	MaxGoRoutines int `mapstructure:"max_go_routines"`
 
-	// DB :env
-	DATABASE_URL string `mapstructure:"DATABASE_URL"`
+	//DB
+	DBUser string `mapstructure:"DB_USER"`
+	DBPass string `mapstructure:"DB_PASS"`
+	DBNet  string `mapstructure:"DB_NET"`
+	DBAddr string `mapstructure:"DB_ADDR"`
+	DBName string `mapstructure:"DB_NAME"`
 
 	// Redis :env
-	REDIS_URL string `mapstructure:"REDIS_URL"`
+	RedisUrl string `mapstructure:"REDIS_URL"`
 
 	// JWT :env
-	JWT_SECRET string `mapstructure:"JWT_SECRET"`
+	JwtSecret string `mapstructure:"JWT_SECRET"`
 }
 
 func MustLoadConfig() *Config {
@@ -46,7 +50,7 @@ func MustLoadConfig() *Config {
 	}
 
 	v.SetConfigName(env)                 // Name of config file (without extension).
-	v.AddConfigPath("./service/config/") // Path where config file is located.
+	v.AddConfigPath("./service/config/") // Path where config file is located.         // Path where config file is located.
 	v.SetConfigType("yaml")              // Type of config file.
 
 	v.AutomaticEnv() // Automatically override config values with environment variables.

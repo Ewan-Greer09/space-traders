@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"context"
+	"database/sql"
 
 	openAPI "github.com/UnseenBook/spacetraders-go-sdk"
+	"github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-jwt/jwt"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 
-	"space-traders/repository/postgres"
+	db "space-traders/repository/mysql"
 	"space-traders/service/api/client"
 	"space-traders/service/config"
 	"space-traders/service/views/components/shared"
@@ -24,7 +24,7 @@ type ErrorResponse struct {
 
 type ViewHandler struct {
 	Client   *openAPI.APIClient
-	userDB   *postgres.Queries
+	userDB   *db.Queries
 	cfg      *config.Config
 	myClient *client.Client
 }
@@ -39,15 +39,23 @@ func NewViewHandler(config *config.Config) *ViewHandler {
 	cfg.AddDefaultHeader("Content-Type", "application/json")
 	cfg.AddDefaultHeader("Accept", "application/json")
 
-	// create a connection pool
-	pool, err := pgxpool.New(context.Background(), config.DATABASE_URL)
+	c := &mysql.Config{
+		User:   config.DBUser,
+		Passwd: config.DBPass,
+		Net:    config.DBNet,
+		Addr:   config.DBAddr,
+		DBName: config.DBName,
+	}
+
+	// create a connection pools
+	pool, err := sql.Open("mysql", c.FormatDSN())
 	if err != nil {
 		panic(err)
 	}
 
 	return &ViewHandler{
 		Client:   openAPI.NewAPIClient(cfg),
-		userDB:   postgres.New(pool),
+		userDB:   db.New(pool),
 		cfg:      config,
 		myClient: client.NewClient(),
 	}
@@ -56,13 +64,13 @@ func NewViewHandler(config *config.Config) *ViewHandler {
 func (vh *ViewHandler) GetHeader(c echo.Context) error {
 	vh.Client.GetConfig().AddDefaultHeader("Authorization", "")
 
-	_, r, err := vh.Client.DefaultAPI.GetStatus(c.Request().Context()).Execute()
+	_, resp, err := vh.Client.DefaultAPI.GetStatus(c.Request().Context()).Execute()
 	if err != nil {
 		c.Logger().Error(err.Error())
 		return shared.Error(err).Render(c.Request().Context(), c.Response())
 	}
 
-	if r.StatusCode != 200 {
+	if resp.StatusCode != 200 {
 		return shared.Header(false).Render(c.Request().Context(), c.Response())
 	}
 
@@ -93,7 +101,7 @@ func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {
 					return nil, echo.NewHTTPError(401, "Invalid token")
 				}
 
-				return []byte(vh.cfg.JWT_SECRET), nil
+				return []byte(vh.cfg.JwtSecret), nil
 
 			})
 			if err != nil {
@@ -107,17 +115,17 @@ func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {
 				return next(c)
 			}
 
-			user, err := vh.userDB.GetUserWithAPIKeyByUsername(c.Request().Context(), pgtype.Text{String: claims["username"].(string), Valid: true})
+			user, err := vh.userDB.GetUserWithAPIKeyByUsername(c.Request().Context(), sql.NullString{String: claims["username"].(string), Valid: true})
 			if err != nil {
 				c.Logger().Error(err.Error())
 				return next(c)
 			}
 
-			c.Set("apiKey", user.Key.String) // save this in the context to facilitate user lookups using the apikey as pkey
+			c.Set("apiKey", user.ApiKey.String)
 			c.Set("username", claims["username"])
 
-			vh.Client.GetConfig().AddDefaultHeader("Authorization", "Bearer "+user.Key.String)
-			vh.myClient.SetHeader("Authorization", "Bearer "+user.Key.String)
+			vh.Client.GetConfig().AddDefaultHeader("Authorization", "Bearer "+user.ApiKey.String)
+			vh.myClient.SetHeader("Authorization", "Bearer "+user.ApiKey.String)
 
 			return next(c)
 		}

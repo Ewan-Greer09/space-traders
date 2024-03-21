@@ -1,16 +1,16 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 
-	"space-traders/repository/postgres"
+	"space-traders/repository/mysql"
 	"space-traders/service/views/components/login"
 	"space-traders/service/views/components/register"
 )
@@ -31,7 +31,7 @@ func (vh *ViewHandler) HandleLogin(c echo.Context) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 
-	user, err := vh.userDB.GetUserWithAPIKeyByUsername(c.Request().Context(), pgtype.Text{String: username, Valid: true})
+	user, err := vh.userDB.GetUserWithAPIKeyByUsername(c.Request().Context(), sql.NullString{String: username, Valid: true})
 	if err != nil {
 		c.Logger().Error(err.Error())
 		return login.LoginFailure().Render(c.Request().Context(), c.Response())
@@ -98,21 +98,21 @@ func (vh *ViewHandler) HandleRegister(c echo.Context) error {
 		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
 	}
 
-	u := postgres.CreateUserParams{
-		UserUid:  pgtype.Text{String: uuid.NewString(), Valid: true},
-		Username: pgtype.Text{String: username, Valid: true},
-		Password: pgtype.Text{String: string(hashedPassword), Valid: true},
-		Email:    pgtype.Text{String: "", Valid: false},
+	u := mysql.CreateUserParams{
+		UserUid:  sql.NullString{String: uuid.NewString(), Valid: true},
+		Username: sql.NullString{String: username, Valid: true},
+		Password: sql.NullString{String: string(hashedPassword), Valid: true},
+		Email:    sql.NullString{String: "", Valid: false},
 	}
-	_, err = vh.userDB.CreateUser(c.Request().Context(), u)
+	err = vh.userDB.CreateUser(c.Request().Context(), u)
 	if err != nil {
 		c.Logger().Error(err.Error())
 		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
 	}
 
-	err = vh.userDB.CreateAPIKey(c.Request().Context(), postgres.CreateAPIKeyParams{
-		Key:      pgtype.Text{String: apiKey, Valid: true},
-		Username: pgtype.Text{String: username, Valid: true},
+	err = vh.userDB.CreateAPIKey(c.Request().Context(), mysql.CreateAPIKeyParams{
+		ApiKey:   sql.NullString{String: apiKey, Valid: true},
+		Username: sql.NullString{String: username, Valid: true},
 	})
 	if err != nil {
 		c.Logger().Error(err.Error())
@@ -130,7 +130,7 @@ func (vh ViewHandler) generateUserJWT(username string) (string, error) {
 
 	token.Claims = claims
 
-	secret := []byte(vh.cfg.JWT_SECRET)
+	secret := []byte(vh.cfg.JwtSecret)
 
 	t, err := token.SignedString(secret)
 	if err != nil {
