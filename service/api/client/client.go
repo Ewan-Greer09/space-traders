@@ -10,7 +10,7 @@ import (
 )
 
 type Client struct {
-	resty *resty.Client
+	*resty.Client
 }
 
 func NewClient() *Client {
@@ -21,12 +21,12 @@ func NewClient() *Client {
 	r.SetDoNotParseResponse(true)
 
 	return &Client{
-		resty: r,
+		Client: r,
 	}
 }
 
 func (c *Client) GetMyShips(symbol string) (*models.GetMyShip200Response, error) {
-	resp, err := c.resty.R().Get("/my/ships/" + symbol)
+	resp, err := c.R().Get("/my/ships/" + symbol)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *Client) GetMyShips(symbol string) (*models.GetMyShip200Response, error)
 }
 
 func (c *Client) SendToOrbit(symbol string) error {
-	resp, err := c.resty.R().Post("/my/ships/" + symbol + "/orbit")
+	resp, err := c.R().Post("/my/ships/" + symbol + "/orbit")
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (c *Client) SendToOrbit(symbol string) error {
 }
 
 func (c *Client) NavigateShip(systemSymbol, waypointSymbol string) (*models.Waypoint, error) {
-	resp, err := c.resty.R().SetBody(struct {
+	resp, err := c.R().SetBody(struct {
 		WaypointSymbol string `json:"waypointSymbol"`
 	}{
 		WaypointSymbol: waypointSymbol,
@@ -82,8 +82,4 @@ func (c *Client) NavigateShip(systemSymbol, waypointSymbol string) (*models.Wayp
 	}
 
 	return &waypointData, nil
-}
-
-func (c *Client) SetHeader(key, value string) {
-	c.resty.SetHeader(key, value)
 }
