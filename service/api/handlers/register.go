@@ -37,7 +37,7 @@ func (h *ViewHandler) RegisterSubmit(c echo.Context) error {
 
 	encryptedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return register.RegisterResponseError("Failed to encrypt password").Render(c.Request().Context(), c.Response())
+		return register.RegisterResponseError("There was an issue. Please wait a moment and try again").Render(c.Request().Context(), c.Response())
 	}
 
 	err = h.userDB.CreateUser(c.Request().Context(), mysql.CreateUserParams{
