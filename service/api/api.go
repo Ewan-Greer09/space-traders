@@ -46,6 +46,7 @@ func (a *API) Routes() {
 	a.e.Use(middleware.Gzip())
 	a.e.Use(middleware.Secure())
 	a.e.Use(a.ViewHandler.AddKeyToReq())
+	a.e.Use(a.ViewHandler.LoginRedirect())
 
 	a.e.Static("/static", "service/static")
 

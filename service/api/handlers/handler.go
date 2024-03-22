@@ -112,3 +112,28 @@ func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {
 func (vh *ViewHandler) Favicon(c echo.Context) error {
 	return c.File("service/static/favicon.ico")
 }
+
+// Should this be stored in a config file, so that it can be easily changed?
+var allowedPaths = []string{"/login", "/login/submit", "/register", "/register/submit"}
+
+// LoginRedirect is a middleware that checks if the user is logged in. If not, it redirects to the login page.
+// It ignores paths present in "allowedPaths".
+func (vh *ViewHandler) LoginRedirect() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			for _, path := range allowedPaths {
+				if c.Path() == path {
+					return next(c)
+				}
+			}
+
+			cookie, err := c.Cookie("session")
+			if err != nil || cookie.Value == "" {
+				c.Redirect(302, "/login")
+				return nil
+			}
+
+			return next(c)
+		}
+	}
+}
