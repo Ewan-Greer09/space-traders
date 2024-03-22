@@ -51,6 +51,7 @@ func (a *API) Routes() {
 
 	a.ViewHandler.MountSharedRoutes(a.e)
 	a.ViewHandler.MountLoginRoutes(a.e)
+	a.ViewHandler.MountRegisterRoutes(a.e)
 
 	a.e.GET("/", func(c echo.Context) error {
 		return index.Page().Render(c.Request().Context(), c.Response())

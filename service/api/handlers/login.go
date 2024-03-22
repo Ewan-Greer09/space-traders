@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 
 	"space-traders/service/views/login"
 )
@@ -14,6 +15,7 @@ import (
 func (h *ViewHandler) MountLoginRoutes(e *echo.Echo) {
 	e.GET("/login", h.LoginPage)
 	e.GET("/login/submit", h.LoginSubmit)
+	e.GET("/logout", Logout)
 }
 
 func (h *ViewHandler) LoginPage(c echo.Context) error {
@@ -30,11 +32,12 @@ func (h *ViewHandler) LoginSubmit(c echo.Context) error {
 
 	user, err := h.userDB.GetUserWithAPIKeyByUsername(c.Request().Context(), sql.NullString{String: username, Valid: true})
 	if err != nil {
-		return login.LoginResponseError("Invalid username or password").Render(c.Request().Context(), c.Response())
+		return login.LoginResponseError("Invalid username").Render(c.Request().Context(), c.Response())
 	}
 
-	if user.Password.String != password {
-		return login.LoginResponseError("Invalid username or password").Render(c.Request().Context(), c.Response())
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password.String), []byte(password))
+	if err != nil {
+		return login.LoginResponseError("Invalid password").Render(c.Request().Context(), c.Response())
 	}
 
 	token, err := h.generateUserJWT(username)
@@ -72,4 +75,18 @@ func (vh ViewHandler) generateUserJWT(username string) (string, error) {
 	}
 
 	return t, nil
+}
+
+func Logout(e echo.Context) error {
+	cookie := &http.Cookie{
+		Name:     "session",
+		Value:    "",
+		Path:     "/",
+		SameSite: http.SameSiteLaxMode,
+		HttpOnly: true,
+		Expires:  time.Now().Add(-1 * time.Hour),
+	}
+
+	e.SetCookie(cookie)
+	return e.Redirect(http.StatusFound, "/")
 }
