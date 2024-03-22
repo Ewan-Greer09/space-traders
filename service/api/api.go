@@ -8,6 +8,7 @@ import (
 
 	"space-traders/service/api/handlers"
 	"space-traders/service/config"
+	"space-traders/service/views/index"
 )
 
 type API struct {
@@ -47,11 +48,11 @@ func (a *API) Routes() {
 	a.e.Use(a.ViewHandler.AddKeyToReq())
 
 	a.e.Static("/static", "service/static")
-	a.e.GET("/favicon.ico", a.ViewHandler.Favicon)
 
-	a.ViewHandler.MountIndexRoutes(a.e)
-	a.ViewHandler.MountFleetRoutes(a.e)
-	a.ViewHandler.MountLoginRoutes(a.e)
 	a.ViewHandler.MountSharedRoutes(a.e)
-	a.ViewHandler.MountSystemRoutes(a.e)
+	a.ViewHandler.MountLoginRoutes(a.e)
+
+	a.e.GET("/", func(c echo.Context) error {
+		return index.Page().Render(c.Request().Context(), c.Response())
+	})
 }

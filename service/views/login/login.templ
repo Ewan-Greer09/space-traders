@@ -1,0 +1,58 @@
+package login
+
+import "fmt"
+
+templ Page() {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>Login</title>
+			// css 
+			<link rel="stylesheet" href="/static/css/shared.css"/>
+			<script src="https://cdn.tailwindcss.com"></script>
+			// htmx cdn
+			<script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
+		</head>
+		<body class="bg-slate-800">
+			<div class="flex justify-center items-center h-screen">
+				<div class="w-80 rounded-2xl bg-slate-900">
+					<form hx-get="/login/submit" hx-target="#login-response" hx-swap="outerHTML">
+						<div class="flex flex-col gap-2 p-8">
+							<p class="text-center text-3xl text-gray-300 mb-4">Login</p>
+							<input
+								class="bg-slate-900 w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:ring-offset-gray-800 text-white"
+								placeholder="Username"
+								type="text"
+								name="username"
+							/>
+							<input
+								class="bg-slate-900 w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:ring-offset-gray-800 text-white"
+								placeholder="Password"
+								type="password"
+								name="password"
+							/>
+							<button
+								type="submit"
+								class="inline-block cursor-pointer rounded-md bg-gray-700 px-4 py-3.5 text-center text-sm font-semibold uppercase text-white transition duration-200 ease-in-out hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-700 focus-visible:ring-offset-2 active:scale-95"
+							>
+								Login
+							</button>
+							<p class="text-left text-sm text-gray-300 mb-4 hover:underline"><a href="/register">Register?</a></p>
+							<p id="login-response" class="text-center text-3xl text-gray-300 mb-4"></p>
+						</div>
+					</form>
+				</div>
+			</div>
+		</body>
+	</html>
+}
+
+templ LoginResponseSuccess(message string) {
+	<p class="text-center text-green-300 mb-4" id="login-response">{ fmt.Sprint(message) }</p>
+}
+
+templ LoginResponseError(message string) {
+	<p class="text-center text-red-300 mb-4" id="login-response">{ fmt.Sprint(message) }</p>
+}

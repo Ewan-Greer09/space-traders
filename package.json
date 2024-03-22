@@ -1,0 +1,22 @@
+{
+  "name": "space-traders",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cmd/main.go",
+  "scripts": {
+    "test": "go test -v ./..."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ewan-Greer09/space-traders.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ewan-Greer09/space-traders/issues"
+  },
+  "homepage": "https://github.com/Ewan-Greer09/space-traders#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}

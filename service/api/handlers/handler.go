@@ -11,7 +11,6 @@ import (
 	db "space-traders/repository/mysql"
 	"space-traders/service/api/client"
 	"space-traders/service/config"
-	"space-traders/service/views/components/shared"
 )
 
 type ErrorResponse struct {
@@ -29,8 +28,7 @@ type ViewHandler struct {
 }
 
 func (vh *ViewHandler) MountSharedRoutes(e *echo.Echo) {
-	e.GET("/com/header", vh.GetHeader)
-	e.GET("/com/footer", vh.GetFooter)
+	e.GET("/favicon.ico", vh.Favicon)
 }
 
 func NewViewHandler(config *config.Config) *ViewHandler {
@@ -58,26 +56,6 @@ func NewViewHandler(config *config.Config) *ViewHandler {
 		cfg:      config,
 		myClient: client.NewClient(),
 	}
-}
-
-func (vh *ViewHandler) GetHeader(c echo.Context) error {
-	vh.Client.GetConfig().AddDefaultHeader("Authorization", "")
-
-	_, resp, err := vh.Client.DefaultAPI.GetStatus(c.Request().Context()).Execute()
-	if err != nil {
-		c.Logger().Error(err.Error())
-		return shared.Error(err).Render(c.Request().Context(), c.Response())
-	}
-
-	if resp.StatusCode != 200 {
-		return shared.Header(false).Render(c.Request().Context(), c.Response())
-	}
-
-	return shared.Header(true).Render(c.Request().Context(), c.Response())
-}
-
-func (vh *ViewHandler) GetFooter(c echo.Context) error {
-	return shared.Footer().Render(c.Request().Context(), c.Response())
 }
 
 func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {

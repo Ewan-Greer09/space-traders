@@ -4,5 +4,6 @@ data
 *.log
 
 .idea
+node_modules
 
 tmp

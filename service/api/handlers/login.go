@@ -6,47 +6,40 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"golang.org/x/crypto/bcrypt"
 
-	"space-traders/repository/mysql"
-	"space-traders/service/views/components/login"
-	"space-traders/service/views/components/register"
+	"space-traders/service/views/login"
 )
 
-func (vh *ViewHandler) MountLoginRoutes(e *echo.Echo) {
-	e.GET("/login", vh.GetLogin)
-	e.GET("/register", vh.GetRegister)
-	e.POST("/login", vh.HandleLogin)
-	e.POST("/register", vh.HandleRegister)
-	e.GET("/logout", vh.Logout)
+func (h *ViewHandler) MountLoginRoutes(e *echo.Echo) {
+	e.GET("/login", h.LoginPage)
+	e.GET("/login/submit", h.LoginSubmit)
 }
 
-func (vh *ViewHandler) GetLogin(c echo.Context) error {
+func (h *ViewHandler) LoginPage(c echo.Context) error {
 	return login.Page().Render(c.Request().Context(), c.Response())
 }
 
-func (vh *ViewHandler) HandleLogin(c echo.Context) error {
+func (h *ViewHandler) LoginSubmit(c echo.Context) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 
-	user, err := vh.userDB.GetUserWithAPIKeyByUsername(c.Request().Context(), sql.NullString{String: username, Valid: true})
-	if err != nil {
-		c.Logger().Error(err.Error())
-		return login.LoginFailure().Render(c.Request().Context(), c.Response())
+	if username == "" || password == "" {
+		return login.LoginResponseError("Username and password are required").Render(c.Request().Context(), c.Response())
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password.String), []byte(password))
+	user, err := h.userDB.GetUserWithAPIKeyByUsername(c.Request().Context(), sql.NullString{String: username, Valid: true})
 	if err != nil {
-		c.Logger().Error(err.Error())
-		return login.LoginFailure().Render(c.Request().Context(), c.Response())
+		return login.LoginResponseError("Invalid username or password").Render(c.Request().Context(), c.Response())
 	}
 
-	token, err := vh.generateUserJWT(username)
+	if user.Password.String != password {
+		return login.LoginResponseError("Invalid username or password").Render(c.Request().Context(), c.Response())
+	}
+
+	token, err := h.generateUserJWT(username)
 	if err != nil {
-		c.Logger().Error("Failed to generate JWT")
-		return login.LoginFailure().Render(c.Request().Context(), c.Response())
+		return login.LoginResponseError("Failed to generate token").Render(c.Request().Context(), c.Response())
 	}
 
 	cookie := &http.Cookie{
@@ -59,67 +52,8 @@ func (vh *ViewHandler) HandleLogin(c echo.Context) error {
 	}
 
 	c.SetCookie(cookie)
-	return login.LoginSuccess().Render(c.Request().Context(), c.Response())
-}
-
-func (vh *ViewHandler) Logout(c echo.Context) error {
-	cookie := &http.Cookie{
-		Name:     "session",
-		Value:    "",
-		Path:     "/",
-		SameSite: http.SameSiteLaxMode,
-		HttpOnly: true,
-		Expires:  time.Now().Add(-1 * time.Hour),
-	}
-	c.SetCookie(cookie)
-
-	vh.Client.GetConfig().AddDefaultHeader("Authorization", "")
-
-	return c.Redirect(http.StatusFound, "/")
-}
-
-func (vh *ViewHandler) GetRegister(c echo.Context) error {
-	return register.Page().Render(c.Request().Context(), c.Response())
-}
-
-func (vh *ViewHandler) HandleRegister(c echo.Context) error {
-	username := c.FormValue("username")
-	password := c.FormValue("password")
-	apiKey := c.FormValue("api-key")
-
-	if username == "" || password == "" || apiKey == "" {
-		c.Logger().Error("Missing required fields")
-		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		c.Logger().Error(err.Error())
-		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
-	}
-
-	u := mysql.CreateUserParams{
-		UserUid:  sql.NullString{String: uuid.NewString(), Valid: true},
-		Username: sql.NullString{String: username, Valid: true},
-		Password: sql.NullString{String: string(hashedPassword), Valid: true},
-		Email:    sql.NullString{String: "", Valid: false},
-	}
-	err = vh.userDB.CreateUser(c.Request().Context(), u)
-	if err != nil {
-		c.Logger().Error(err.Error())
-		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
-	}
-
-	err = vh.userDB.CreateAPIKey(c.Request().Context(), mysql.CreateAPIKeyParams{
-		ApiKey:   sql.NullString{String: apiKey, Valid: true},
-		Username: sql.NullString{String: username, Valid: true},
-	})
-	if err != nil {
-		c.Logger().Error(err.Error())
-		return register.RegisterFailure().Render(c.Request().Context(), c.Response())
-	}
-
-	return register.RegisterSuccess().Render(c.Request().Context(), c.Response())
+	c.Response().Header().Set("HX-Redirect", "http://localhost:3000/")
+	return login.LoginResponseSuccess("Login Successful").Render(c.Request().Context(), c.Response())
 }
 
 func (vh ViewHandler) generateUserJWT(username string) (string, error) {
