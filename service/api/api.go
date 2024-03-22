@@ -55,4 +55,12 @@ func (a *API) Routes() {
 	a.e.GET("/", func(c echo.Context) error {
 		return index.Page().Render(c.Request().Context(), c.Response())
 	})
+
+	a.e.GET("/ship/data", func(c echo.Context) error {
+		return index.ShipData("This is some demo ship data").Render(c.Request().Context(), c.Response())
+	})
+
+	a.e.GET("/system/data", func(c echo.Context) error {
+		return index.SystemData("This is some demo system data").Render(c.Request().Context(), c.Response())
+	})
 }

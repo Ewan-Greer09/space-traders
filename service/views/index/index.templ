@@ -7,7 +7,23 @@ templ Page() {
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>index</title>
+			// css 
+			<link rel="stylesheet" href="/static/css/shared.css"/>
+			<script src="https://cdn.tailwindcss.com"></script>
+			// htmx cdn
+			<script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
 		</head>
-		<body></body>
+		<body class="bg-slate-800 justify-between grid grid-cols-2 gap-4">
+			<div id="ship-data" hx-get="/ship/data" hx-swap="this" hx-trigger="load" class="p-5 m-5 border border-red-700">Ship Data</div>
+			<div id="system-data" hx-get="/system/data" hx-swap="this" hx-trigger="load" class="p-5 m-5 border border-green-700">System Data</div>
+		</body>
 	</html>
+}
+
+templ ShipData(data string) {
+	<p class="text-white">{ data }</p>
+}
+
+templ SystemData(data string) {
+	<p class="text-white">{ data }</p>
 }
