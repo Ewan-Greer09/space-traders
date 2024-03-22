@@ -13,13 +13,6 @@ import (
 	"space-traders/service/config"
 )
 
-type ErrorResponse struct {
-	Error struct {
-		Message string `json:"message"`
-		Code    int    `json:"code"`
-	}
-}
-
 type ViewHandler struct {
 	Client   *openAPI.APIClient
 	userDB   *db.Queries
