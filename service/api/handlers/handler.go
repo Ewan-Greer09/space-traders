@@ -51,43 +51,43 @@ func NewViewHandler(config *config.Config) *ViewHandler {
 	}
 }
 
+// should this be stored in a config file, so that it can be easily changed?
+var nonAuthPaths = []string{"/login", "/login/submit", "/register", "/register/submit", "/com/header", "/com/footer"}
+
+// AddKeyToReq is a middleware that adds the API key to the request context.
+// it ignores paths present in "nonAuthPaths".
 func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			if c.Path() == "/login" || c.Path() == "/register" || c.Path() == "/com/header" || c.Path() == "/com/footer" {
-				c.Logger().Info("Skipping auth for path: ", c.Path())
-				return next(c)
+			for _, path := range nonAuthPaths {
+				if c.Path() == path {
+					return next(c)
+				}
 			}
 
 			cookie, err := c.Cookie("session")
 			if err != nil || cookie.Value == "" {
-				c.Logger().Error(err.Error())
 				return next(c)
 			}
 
 			token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					c.Logger().Error("Invalid token method")
 					return nil, echo.NewHTTPError(401, "Invalid token")
 				}
 
 				return []byte(vh.cfg.JwtSecret), nil
-
 			})
 			if err != nil {
-				c.Logger().Error(err.Error())
 				next(c)
 			}
 
 			claims, ok := token.Claims.(jwt.MapClaims)
 			if !ok || !token.Valid {
-				c.Logger().Error("Invalid token")
 				return next(c)
 			}
 
 			user, err := vh.userDB.GetUserWithAPIKeyByUsername(c.Request().Context(), sql.NullString{String: claims["username"].(string), Valid: true})
 			if err != nil {
-				c.Logger().Error(err.Error())
 				return next(c)
 			}
 
