@@ -20,6 +20,7 @@ type Config struct {
 
 	// Client :env
 	ApiAccessToken string `mapstructure:"API_ACCESS_TOKEN"`
+	ClientBaseURL  string `mapstructure:"BASE_URL"`
 
 	// MaxGoRoutines is the maximum number of go routines for automated tasks / workers
 	MaxGoRoutines int `mapstructure:"max_go_routines"`

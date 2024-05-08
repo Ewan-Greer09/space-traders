@@ -1,6 +1,9 @@
 package index 
 
-templ Page() {
+import "space-traders/service/views/header"
+import "space-traders/service/api/models"
+
+templ Page(data map[string]any) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -13,9 +16,12 @@ templ Page() {
 			// htmx cdn
 			<script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
 		</head>
-		<body class="bg-slate-800 justify-between grid grid-cols-2 gap-4">
-			<div id="ship-data" hx-get="/ship/data" hx-swap="this" hx-trigger="load" class="p-5 m-5 border border-red-700">Ship Data</div>
-			<div id="system-data" hx-get="/system/data" hx-swap="this" hx-trigger="load" class="p-5 m-5 border border-green-700">System Data</div>
+		<body class="bg-slate-800">
+			@header.Header(data["HeaderArgs"].(models.HeaderArgs))
+			<main class="justify-between grid grid-cols-2 gap-4">
+				<div id="ship-data" hx-get="/ship/data" hx-swap="this" hx-trigger="load" class="p-5 m-5 border border-red-700">Ship Data</div>
+				<div id="system-data" hx-get="/system/data" hx-swap="this" hx-trigger="load" class="p-5 m-5 border border-green-700">System Data</div>
+			</main>
 		</body>
 	</html>
 }

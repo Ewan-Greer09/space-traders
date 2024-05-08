@@ -6,3 +6,6 @@ log_level: "debug"
 log_file: "st_dashboard.log"
 
 max_go_routines: "10"
+
+# Client configuration
+BASE_URL: "https://api.spacetraders.io/v2"

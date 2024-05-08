@@ -26,7 +26,7 @@ func NewAPI() *API {
 		ViewHandler: handlers.NewViewHandler(config.MustLoadConfig()),
 		Cfg:         config.MustLoadConfig(),
 	}
-	a.Routes()
+	a.reigsterRoutes()
 
 	return a
 }
@@ -38,31 +38,29 @@ func (a *API) Start() error {
 	return nil
 }
 
-func (a *API) Routes() {
-	a.e.Use(middleware.RequestID())
-	a.e.Use(middleware.Logger())
-	a.e.Use(middleware.Recover())
-	a.e.Use(middleware.CORS())
-	a.e.Use(middleware.Gzip())
-	a.e.Use(middleware.Secure())
-	a.e.Use(a.ViewHandler.AddKeyToReq())
-	a.e.Use(a.ViewHandler.LoginRedirect())
+func (api *API) reigsterRoutes() {
+	api.e.Use(
+		middleware.RequestID(),
+		middleware.Logger(),
+		middleware.Recover(),
+		middleware.CORS(),
+		middleware.Gzip(),
+		middleware.Secure(),
+		api.ViewHandler.AddKeyToReq(),
+		api.ViewHandler.LoginRedirect(),
+	)
 
-	a.e.Static("/static", "service/static")
+	api.e.Static("/static", "service/static")
 
-	a.ViewHandler.MountSharedRoutes(a.e)
-	a.ViewHandler.MountLoginRoutes(a.e)
-	a.ViewHandler.MountRegisterRoutes(a.e)
+	MountRoutes(api.e, *api.ViewHandler)
 
-	a.e.GET("/", func(c echo.Context) error {
-		return index.Page().Render(c.Request().Context(), c.Response())
-	})
+	api.e.GET("/", api.ViewHandler.HandlerHeader)
 
-	a.e.GET("/ship/data", func(c echo.Context) error {
+	api.e.GET("/ship/data", func(c echo.Context) error {
 		return index.ShipData("This is some demo ship data").Render(c.Request().Context(), c.Response())
 	})
 
-	a.e.GET("/system/data", func(c echo.Context) error {
+	api.e.GET("/system/data", func(c echo.Context) error {
 		return index.SystemData("This is some demo system data").Render(c.Request().Context(), c.Response())
 	})
 }

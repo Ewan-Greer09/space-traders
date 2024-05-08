@@ -1,0 +1,40 @@
+package header
+
+import (
+	"fmt"
+	"space-traders/service/api/models"
+)
+
+templ Header(data models.HeaderArgs) {
+	<header class="bg-slate-800 text-white p-4 flex items-center justify-between">
+		<h1 class="text-xl font-bold md:text-3xl underline cursor-pointer"><a href="/">Space Traders Dash</a></h1>
+		<nav>
+			<ul class="flex gap-4">
+				<li>
+					<a href="/" class="text-white hover:text-gray-300 transition-colors hover:underline">Home</a>
+				</li>
+				<li>
+					<a href="/login" class="text-white hover:text-gray-300 transition-colors hover:underline">Login</a>
+				</li>
+				<li>
+					<a href="/register" class="text-white hover:text-gray-300 transition-colors hover:underline">Register</a>
+				</li>
+				<li>
+					<a href="/logout" class="text-white hover:text-gray-300 transition-colors hover:underline">Logout</a>
+				</li>
+			</ul>
+		</nav>
+		<div id="profile-section" class="flex items-center gap-2">
+			<a href="/profile"><img src="https://placehold.co/50x50" alt="Profile Image" class="rounded-full"/></a>
+			<div class="flex flex-col w-48">
+				<p id="username">{ fmt.Sprint(data.Username) }</p>
+				<p id="credits">${ fmt.Sprint(data.Credits) }</p>
+				if data.Status {
+					<p id="status" class="text-green-400">Online</p>
+				} else {
+					<p id="status" class="text-red-400">Status: Offline</p>
+				}
+			</div>
+		</div>
+	</header>
+}

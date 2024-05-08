@@ -3,83 +3,68 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 
 	"github.com/go-resty/resty/v2"
 
-	"space-traders/models"
+	"space-traders/service/config"
 )
+
+var (
+	ErrCannotGetShipLocation = fmt.Errorf("unable to get ship location")
+	ErrCannotOribitShip      = fmt.Errorf("unable to orbit ship")
+)
+
+// interface for interacting with the space traders API endpoints
+type SpaceTradersClient interface {
+	// get the server status of the space traders API
+	GetStatus() (map[string]any, error)
+	// Get the callers agent agent data //? how will this work with an account that has many API keys?
+	GetMyAgent() (map[string]any, error)
+	// Get a list of agents contracts
+	ListContracts() (map[string]any, error)
+	// Get a specific contract
+	GetContract(contractID string) (map[string]any, error)
+	// Accept a contract
+	AcceptContract(contractID string) (map[string]any, error)
+	// Deliver Cargo to a Contract
+	DeliverCargo(contractID string) (map[string]any, error)
+}
 
 type Client struct {
 	*resty.Client
+	logger *slog.Logger
+	cfg    *config.Config
 }
 
-func NewClient() *Client {
-	r := resty.New()
-	r.SetHeader("Content-Type", "application/json")
-	r.SetHeader("Accept", "application/json")
-	r.SetBaseURL("https://api.spacetraders.io/v2")
-	r.SetDoNotParseResponse(true)
-
+func NewClient(cfg *config.Config) *Client {
 	return &Client{
-		Client: r,
+		Client: resty.New().
+			SetHeader("Content-Type", "application/json").
+			SetHeader("Accept", "application/json").
+			SetBaseURL(cfg.ClientBaseURL),
+		logger: slog.Default(),
+		cfg:    cfg,
 	}
 }
 
-func (c *Client) GetMyShips(symbol string) (*models.GetMyShip200Response, error) {
-	resp, err := c.R().Get("/my/ships/" + symbol)
+func (c *Client) GetStatus() (map[string]any, error) {
+	c.SetHeader("Authorization", "")
+
+	resp, err := c.R().Get("/")
 	if err != nil {
-		return nil, err
-	}
-	defer resp.RawBody().Close()
-
-	if resp.StatusCode() != 200 {
-		return nil, fmt.Errorf("unable to get ship location: " + resp.Status())
+		return nil, fmt.Errorf("error getting status: %w", err)
 	}
 
-	var data models.GetMyShip200Response
-	err = json.NewDecoder(resp.RawBody()).Decode(&data)
+	if resp.IsError() {
+		return nil, fmt.Errorf("error getting status: %s", resp.Status())
+	}
+
+	var status map[string]any
+	err = json.Unmarshal(resp.Body(), &status)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding status: %w", err)
 	}
 
-	return &data, nil
-}
-
-func (c *Client) SendToOrbit(symbol string) error {
-	resp, err := c.R().Post("/my/ships/" + symbol + "/orbit")
-	if err != nil {
-		return err
-	}
-	defer resp.RawBody().Close()
-
-	if resp.StatusCode() != 200 {
-		return fmt.Errorf("unable to orbit ship")
-	}
-
-	return nil
-}
-
-func (c *Client) NavigateShip(systemSymbol, waypointSymbol string) (*models.Waypoint, error) {
-	resp, err := c.R().SetBody(struct {
-		WaypointSymbol string `json:"waypointSymbol"`
-	}{
-		WaypointSymbol: waypointSymbol,
-	}).
-		Post(fmt.Sprintf("/my/ships/%s/navigate", systemSymbol))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.RawBody().Close()
-
-	if resp.StatusCode() != 200 {
-		return nil, fmt.Errorf("unable to navigate ship:" + resp.Status())
-	}
-
-	var waypointData models.Waypoint
-	err = json.NewDecoder(resp.RawBody()).Decode(&waypointData)
-	if err != nil {
-		return nil, err
-	}
-
-	return &waypointData, nil
+	return status, nil
 }

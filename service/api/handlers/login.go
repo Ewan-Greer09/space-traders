@@ -12,12 +12,6 @@ import (
 	"space-traders/service/views/login"
 )
 
-func (h *ViewHandler) MountLoginRoutes(e *echo.Echo) {
-	e.GET("/login", h.LoginPage)
-	e.GET("/login/submit", h.LoginSubmit)
-	e.GET("/logout", Logout)
-}
-
 func (h *ViewHandler) LoginPage(c echo.Context) error {
 	return login.Page().Render(c.Request().Context(), c.Response())
 }
@@ -77,7 +71,7 @@ func (vh ViewHandler) generateUserJWT(username string) (string, error) {
 	return t, nil
 }
 
-func Logout(e echo.Context) error {
+func (h *ViewHandler) Logout(e echo.Context) error {
 	cookie := &http.Cookie{
 		Name:     "session",
 		Value:    "",

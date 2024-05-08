@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 
-	openAPI "github.com/UnseenBook/spacetraders-go-sdk"
 	"github.com/go-sql-driver/mysql"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
@@ -14,21 +13,16 @@ import (
 )
 
 type ViewHandler struct {
-	Client   *openAPI.APIClient
-	userDB   *db.Queries
-	cfg      *config.Config
-	myClient *client.Client
-}
+	userDB *db.Queries
+	cfg    *config.Config
+	Client *client.Client
 
-func (vh *ViewHandler) MountSharedRoutes(e *echo.Echo) {
-	e.GET("/favicon.ico", vh.Favicon)
+	// paths that are not checked for a session cookie
+	nonAuthPaths []string
+	allowedPaths []string
 }
 
 func NewViewHandler(config *config.Config) *ViewHandler {
-	cfg := openAPI.NewConfiguration()
-	cfg.AddDefaultHeader("Content-Type", "application/json")
-	cfg.AddDefaultHeader("Accept", "application/json")
-
 	c := &mysql.Config{
 		User:   config.DBUser,
 		Passwd: config.DBPass,
@@ -44,15 +38,21 @@ func NewViewHandler(config *config.Config) *ViewHandler {
 	}
 
 	return &ViewHandler{
-		Client:   openAPI.NewAPIClient(cfg),
-		userDB:   db.New(pool),
-		cfg:      config,
-		myClient: client.NewClient(),
+		userDB: db.New(pool),
+		cfg:    config,
+		Client: client.NewClient(config),
 	}
 }
 
-// should this be stored in a config file, so that it can be easily changed?
-var nonAuthPaths = []string{"/login", "/login/submit", "/register", "/register/submit", "/com/header", "/com/footer"}
+// * should this be stored in a config file, so that it can be easily changed?
+var nonAuthPaths = []string{
+	"/login",
+	"/login/submit",
+	"/register",
+	"/register/submit",
+	"/com/header",
+	"/com/footer",
+}
 
 // AddKeyToReq is a middleware that adds the API key to the request context.
 // it ignores paths present in "nonAuthPaths".
@@ -94,8 +94,7 @@ func (vh *ViewHandler) AddKeyToReq() echo.MiddlewareFunc {
 			c.Set("apiKey", user.ApiKey.String)
 			c.Set("username", claims["username"])
 
-			vh.Client.GetConfig().AddDefaultHeader("Authorization", "Bearer "+user.ApiKey.String)
-			vh.myClient.SetHeader("Authorization", "Bearer "+user.ApiKey.String)
+			vh.Client.SetHeader("Authorization", "Bearer "+user.ApiKey.String)
 
 			return next(c)
 		}
@@ -106,8 +105,13 @@ func (vh *ViewHandler) Favicon(c echo.Context) error {
 	return c.File("service/static/favicon.ico")
 }
 
-// Should this be stored in a config file, so that it can be easily changed?
-var allowedPaths = []string{"/login", "/login/submit", "/register", "/register/submit"}
+// * Should this be stored in a config file, so that it can be easily changed?
+var allowedPaths = []string{
+	"/login",
+	"/login/submit",
+	"/register",
+	"/register/submit",
+}
 
 // LoginRedirect is a middleware that checks if the user is logged in. If not, it redirects to the login page.
 // It ignores paths present in "allowedPaths".
@@ -120,6 +124,7 @@ func (vh *ViewHandler) LoginRedirect() echo.MiddlewareFunc {
 				}
 			}
 
+			//should rename session to something like st_session to make it more unique
 			cookie, err := c.Cookie("session")
 			if err != nil || cookie.Value == "" {
 				c.Redirect(302, "/login")
